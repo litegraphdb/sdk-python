@@ -1,16 +1,15 @@
 <img src="assets/favicon.png" height="48">
 
-# PYTHON SDK for LiteGraph
+# Python SDK for LiteGraph
 
-LiteGraph is a lightweight graph database built using Sqlite with support for exporting to GEXF.
+Lightweight graph database with relational and vector support built using Sqlite, designed to power knowledge and artificial intelligence persistence and retrieval.
 
 ## Features
 
-- Multi-tenant support with tenant GUID management
-- Graph management
-- Node and edge operations
-- Route finding between nodes
-- Search capabilities for graphs, nodes, and edges
+- Multi-tenant support
+- Graph, node, and edge management and retrieval
+- Support for labels (strings), tags (key-value pairs), unstructured data (objects), and vectors in a single persistence layer
+- Routing and traversal between nodes
 - GEXF format export support
 - Built-in retry mechanism and error handling
 - Comprehensive logging system
