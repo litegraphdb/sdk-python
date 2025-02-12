@@ -1,15 +1,16 @@
 <img src="assets/favicon.png" height="48">
 
-# Python SDK for LiteGraph
+# PYTHON SDK for LiteGraph
 
-Lightweight graph database with relational and vector support built using Sqlite, designed to power knowledge and artificial intelligence persistence and retrieval.
+LiteGraph is a lightweight graph database built using Sqlite with support for exporting to GEXF.
 
 ## Features
 
-- Multi-tenant support
-- Graph, node, and edge management and retrieval
-- Support for labels (strings), tags (key-value pairs), unstructured data (objects), and vectors in a single persistence layer
-- Routing and traversal between nodes
+- Multi-tenant support with tenant GUID management
+- Graph management
+- Node and edge operations
+- Route finding between nodes
+- Search capabilities for graphs, nodes, and edges
 - GEXF format export support
 - Built-in retry mechanism and error handling
 - Comprehensive logging system
@@ -148,6 +149,18 @@ edge = Edge.create(
 | Update Tag               | PUT    | `v1.0/tenants/{tenant_guid}/tags/{tag_id}` | Update tag details      |
 | Delete Tag               | DELETE | `v1.0/tenants/{tenant_guid}/tags/{tag_id}` | Delete tag details      |
 | List Tags                | GET    | `v1.0/tenants/{tenant_guid}/tags` | List all tags           |
+
+### Vector Operations
+
+| Operation                | Method | Endpoint                           | Description                |
+| ------------------------ | ------ | ---------------------------------- | -------------------------- |
+| Check Vector Exists      | HEAD   | `v1.0/tenants/{tenant_guid}/vectors/{vector_id}` | Check if a vector exists    |
+| Create Vector            | PUT    | `v1.0/tenants/{tenant_guid}/vectors` | Create a new vector        |
+| Get Vector              | GET    | `v1.0/tenants/{tenant_guid}/vectors/{vector_id}` | Retrieve vector details    |
+| Update Vector           | PUT    | `v1.0/tenants/{tenant_guid}/vectors/{vector_id}` | Update vector details      |
+| Delete Vector           | DELETE | `v1.0/tenants/{tenant_guid}/vectors/{vector_id}` | Delete vector details      |
+| List Vectors            | GET    | `v1.0/tenants/{tenant_guid}/vectors` | List all vectors           |
+| Search Vectors          | POST   | `v1.0/tenants/{tenant_guid}/vectors/search` | Search vectors by embeddings |
 
 ### Graph Operations
 
@@ -479,6 +492,57 @@ search_request = {
     }
 }
 edge_results = Edge.search(graph_guid="graph-guid", **search_request)
+```
+
+### Vectors
+
+```python
+from litegraph_sdk import Vector
+from litegraph_sdk.enums.vector_search_domain_enum import VectorSearchDomainEnum
+from litegraph_sdk.configuration import configure
+
+# Configure with tenant GUID and access key
+configure(
+    endpoint="https://api.litegraph.com",
+    tenant_guid="your-tenant-guid",
+    access_key="your-access-key"
+)
+
+# Create a vector
+vector = Vector.create(
+    tenant_guid="tenant-guid",
+    graph_guid="graph-guid",  # Optional
+    vector=[0.1, 0.2, 0.3]
+)
+
+# Retrieve a vector
+vector = Vector.retrieve(vector_guid="vector-guid")
+
+# Retrieve all vectors
+vectors = Vector.retrieve_all()
+
+# Update a vector
+vector = Vector.update(
+    vector_guid="vector-guid",
+    vector=[0.1, 0.2, 0.3]
+)
+
+# Delete a vector
+Vector.delete(vector_guid="vector-guid")
+
+# Check if Vector Exists
+exists = Vector.exists(vector_guid="vector-guid")
+
+# Search vectors
+search_results = Vector.search_vectors(
+    domain=VectorSearchDomainEnum.Node,  # Can be Graph, Node, or Edge
+    embeddings=[0.1, 0.2, 0.3],
+    tenant_guid="tenant-guid",
+    graph_guid="graph-guid",  # Required for Node/Edge searches
+    labels=["label1", "label2"],  # Optional
+    tags={"key": "value"},  # Optional
+    filter_expr={"Left": "field", "Operator": "Equals", "Right": "value"}  # Optional
+)
 ```
 
 ## Route and Traversal
