@@ -221,7 +221,6 @@ class UpdatableAPIResource:
             data = cls.MODEL(**kwargs).model_dump(
                 mode="json", by_alias=True, exclude_unset=True, exclude_defaults=True
             )
-        print(data)
         instance = client.request("PUT", url, json=data)
 
         return cls.MODEL.model_validate(instance) if cls.MODEL else instance

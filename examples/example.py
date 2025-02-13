@@ -56,3 +56,36 @@ all_tenants = litegraph_sdk.Graph.search(
     },
 )
 print(f"All tenants: {all_tenants}")
+
+# Vector search
+vectors = litegraph_sdk.Vector.retrieve_all()
+print(f"Vectors: {vectors}")
+
+# Create a new vector
+new_vector = litegraph_sdk.Vector.create(
+    tenant_guid="00000000-0000-0000-0000-000000000000",
+    graph_guid="00000000-0000-0000-0000-000000000000",
+    vector=[0.1, 0.2, 0.3],
+)
+print(f"New vector: {new_vector}")
+
+# Update a vector
+updated_vector = litegraph_sdk.Vector.update(
+    resource_guid="00000000-0000-0000-0000-000000000000",
+    vector=[0.1, 0.2, 0.3],
+)
+print(f"Updated vector: {updated_vector}")
+
+# Delete a vector
+litegraph_sdk.Vector.delete(resource_guid="00000000-0000-0000-0000-000000000000")
+print("Vector deleted")
+
+
+# Search vectors
+vectors = litegraph_sdk.Vector.search_vectors(
+    domain="Node",
+    embeddings=[0.1, 0.2, 0.3],
+    tenant_guid="00000000-0000-0000-0000-000000000000",
+    graph_guid="00000000-0000-0000-0000-000000000000",
+)
+print(f"Vectors: {vectors}")

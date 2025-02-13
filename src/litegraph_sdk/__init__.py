@@ -23,3 +23,4 @@ from .resources.routes_between import RouteEdges
 from .resources.tags import Tag
 from .resources.tenants import Tenant
 from .resources.users import User
+from .resources.vectors import Vector
