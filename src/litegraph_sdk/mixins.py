@@ -23,7 +23,7 @@ class ExistsAPIResource:
     REQUIRE_TENANT: bool = True
 
     @classmethod
-    def exists(cls, resource_guid: str) -> bool:
+    def exists(cls, guid: str) -> bool:
         client = get_client()
         if cls.REQUIRE_TENANT and client.tenant_guid is None:
             raise ValueError(TENANT_REQUIRED_ERROR)
@@ -31,9 +31,9 @@ class ExistsAPIResource:
         graph_id = client.graph_guid
         tenant = client.tenant_guid if cls.REQUIRE_TENANT else None
         url = (
-            _get_url(cls, tenant, graph_id, resource_guid)
+            _get_url(cls, tenant, graph_id, guid)
             if graph_id and cls.REQUIRE_GRAPH_GUID
-            else _get_url(cls, tenant, resource_guid)
+            else _get_url(cls, tenant, guid)
         )
 
         try:
@@ -113,14 +113,14 @@ class CreateableMultipleAPIResource:
     REQUIRE_TENANT: bool = True
 
     @classmethod
-    def create_multiple(cls, resource_guid: List[dict]) -> List[BaseModel]:
+    def create_multiple(cls, guid: List[dict]) -> List[BaseModel]:
         """
         Creates multiple nodes or edges in a single request.
         """
-        if resource_guid is None:
+        if guid is None:
             raise TypeError("Nodes parameter cannot be None")
 
-        if not resource_guid:
+        if not guid:
             return []
 
         client = get_client()
@@ -132,10 +132,10 @@ class CreateableMultipleAPIResource:
         if cls.MODEL is not None:
             validated_nodes = [
                 cls.MODEL(**node).model_dump(mode="json", by_alias=True)
-                for node in resource_guid
+                for node in guid
             ]
         else:
-            validated_nodes = resource_guid
+            validated_nodes = guid
 
         # Construct URL for multiple creation
         tenant = client.tenant_guid if cls.REQUIRE_TENANT else None
@@ -167,7 +167,7 @@ class RetrievableAPIResource:
     REQUIRE_TENANT: bool = True
 
     @classmethod
-    def retrieve(cls, resource_guid: str) -> "BaseModel":
+    def retrieve(cls, guid: str) -> "BaseModel":
         """
         Retrieve a specific instance of the resource by its ID.
         """
@@ -179,9 +179,9 @@ class RetrievableAPIResource:
             raise ValueError(GRAPH_REQUIRED_ERROR)
         tenant = client.tenant_guid if cls.REQUIRE_TENANT else None
         url = (
-            _get_url(cls, tenant, graph_id, resource_guid)
+            _get_url(cls, tenant, graph_id, guid)
             if graph_id and cls.REQUIRE_GRAPH_GUID
-            else _get_url(cls, tenant, resource_guid)
+            else _get_url(cls, tenant, guid)
         )
         instance = client.request("GET", url)
 
@@ -200,7 +200,7 @@ class UpdatableAPIResource:
     REQUIRE_TENANT: bool = True
 
     @classmethod
-    def update(cls, resource_guid: str, **kwargs) -> "BaseModel":
+    def update(cls, guid: str, **kwargs) -> "BaseModel":
         """
         Update a specific instance of the resource by its ID.
         """
@@ -212,9 +212,9 @@ class UpdatableAPIResource:
             raise ValueError(GRAPH_REQUIRED_ERROR)
         tenant = client.tenant_guid if cls.REQUIRE_TENANT else None
         url = (
-            _get_url(cls, tenant, graph_id, resource_guid)
+            _get_url(cls, tenant, graph_id, guid)
             if graph_id and cls.REQUIRE_GRAPH_GUID
-            else _get_url(cls, tenant, resource_guid)
+            else _get_url(cls, tenant, guid)
         )
 
         if cls.MODEL is not None:
@@ -237,7 +237,7 @@ class DeletableAPIResource:
     REQUIRE_TENANT: bool = True
 
     @classmethod
-    def delete(cls, resource_guid: str, **kwargs) -> None:
+    def delete(cls, guid: str, **kwargs) -> None:
         """
         Delete a resource by its ID.
         """
@@ -249,9 +249,9 @@ class DeletableAPIResource:
             raise ValueError(GRAPH_REQUIRED_ERROR)
         tenant = client.tenant_guid if cls.REQUIRE_TENANT else None
         url = (
-            _get_url(cls, tenant, graph_id, resource_guid, **kwargs)
+            _get_url(cls, tenant, graph_id, guid, **kwargs)
             if graph_id and cls.REQUIRE_GRAPH_GUID
-            else _get_url(cls, tenant, resource_guid, **kwargs)
+            else _get_url(cls, tenant, guid, **kwargs)
         )
 
         client.request("DELETE", url)
@@ -268,14 +268,14 @@ class DeleteMultipleAPIResource:
     REQUIRE_TENANT: bool = True
 
     @classmethod
-    def delete_multiple(cls, resource_guid: List[str]) -> None:
+    def delete_multiple(cls, guid: List[str]) -> None:
         """
         Delete multiple resources by their IDs.
         """
-        if not isinstance(resource_guid, list):
+        if not isinstance(guid, list):
             raise TypeError("Input must be a list of IDs")
 
-        if not resource_guid:
+        if not guid:
             return
 
         client = get_client()
@@ -296,7 +296,7 @@ class DeleteMultipleAPIResource:
         client.request(
             "DELETE",
             url,
-            json=resource_guid,
+            json=guid,
             headers=JSON_CONTENT_TYPE,
         )
 

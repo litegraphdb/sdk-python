@@ -8,9 +8,7 @@ litegraph_sdk.configure(
 )
 
 # Check if tenant exists
-exists = litegraph_sdk.Graph.exists(
-    resource_guid="00000000-0000-0000-0000-000000000000"
-)
+exists = litegraph_sdk.Graph.exists(guid="00000000-0000-0000-0000-000000000000")
 print(f"Tenant exists: {exists}")
 
 
@@ -27,7 +25,7 @@ print(f"Created tenant: {new_tenant}")
 
 # Update a credential
 updated_tenant = litegraph_sdk.Credential.update(
-    resource_guid="cea747d4-9af5-4d79-917f-351a88f1c738",
+    guid="cea747d4-9af5-4d79-917f-351a88f1c738",
     **{
         "UserGUID": "00000000-0000-0000-0000-000000000000",
         "Name": "Updated credential",
@@ -38,12 +36,10 @@ updated_tenant = litegraph_sdk.Credential.update(
 print(f"Updated tenant: {updated_tenant}")
 
 # Retrieve a specific credential
-tenant = litegraph_sdk.User.retrieve(
-    resource_guid="00000000-0000-0000-0000-000000000000"
-)
+tenant = litegraph_sdk.User.retrieve(guid="00000000-0000-0000-0000-000000000000")
 print(f"Retrieved tenant: {tenant}")
 # Delete a credential
-litegraph_sdk.Credential.delete(resource_guid="1deacf52-c1ea-4866-a78b-ed5a46828930")
+litegraph_sdk.Credential.delete(guid="1deacf52-c1ea-4866-a78b-ed5a46828930")
 print("Tenant deleted")
 
 # Search
@@ -71,13 +67,13 @@ print(f"New vector: {new_vector}")
 
 # Update a vector
 updated_vector = litegraph_sdk.Vector.update(
-    resource_guid="00000000-0000-0000-0000-000000000000",
+    guid="00000000-0000-0000-0000-000000000000",
     vector=[0.1, 0.2, 0.3],
 )
 print(f"Updated vector: {updated_vector}")
 
 # Delete a vector
-litegraph_sdk.Vector.delete(resource_guid="00000000-0000-0000-0000-000000000000")
+litegraph_sdk.Vector.delete(guid="00000000-0000-0000-0000-000000000000")
 print("Vector deleted")
 
 

@@ -23,9 +23,9 @@ class Tenant(
     REQUIRE_GRAPH_GUID = False
 
     @classmethod
-    def delete(cls, resource_guid: str, force: bool = False) -> None:
+    def delete(cls, guid: str, force: bool = False) -> None:
         """
         Delete a resource by its GUID.
         """
         kwargs = {"force": None} if force else {}
-        return super().delete(resource_guid, **kwargs)
+        return super().delete(guid, **kwargs)

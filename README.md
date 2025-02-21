@@ -98,11 +98,11 @@ edge = Edge.create(
 
 | Method | Description | Parameters | Returns | Endpoint |
 |--------|-------------|------------|---------|----------|
-| HEAD | Check if a tenant exists | - tenant_guid: str | bool | `v1.0/tenants/{guid}` |
+| HEAD | Check if a tenant exists | - guid: str | bool | `v1.0/tenants/{guid}` |
 | PUT | Create a new tenant | Request Body:<br>- name: str (optional)<br>- active: bool (default: True) | TenantMetadataModel:<br>- guid: str<br>- name: str<br>- active: bool<br>- created_utc: datetime<br>- last_update_utc: datetime | `v1.0/tenants` |
-| GET | Retrieve tenant details | - tenant_guid: str | TenantMetadataModel | `v1.0/tenants/{guid}` |
-| PUT | Update tenant details | Path:<br>- tenant_guid: str<br>Request Body:<br>- name: str (optional)<br>- active: bool (optional) | TenantMetadataModel | `v1.0/tenants/{guid}` |
-| DELETE | Delete a tenant | Path:<br>- tenant_guid: str<br>Query:<br>- force: bool (optional) | None | `v1.0/tenants/{guid}` |
+| GET | Retrieve tenant details | - guid: str | TenantMetadataModel | `v1.0/tenants/{guid}` |
+| PUT | Update tenant details | Path:<br>- guid: str<br>Request Body:<br>- name: str (optional)<br>- active: bool (optional) | TenantMetadataModel | `v1.0/tenants/{guid}` |
+| DELETE | Delete a tenant | Path:<br>- guid: str<br>Query:<br>- force: bool (optional) | None | `v1.0/tenants/{guid}` |
 | GET | List all tenants | None | List[TenantMetadataModel] | `v1.0/tenants` |
 
 ### User Operations
