@@ -1,8 +1,8 @@
 <img src="assets/favicon.png" height="48">
 
-# PYTHON SDK for LiteGraph
+# Python SDK for LiteGraph
 
-LiteGraph is a lightweight graph database built using Sqlite with support for exporting to GEXF.
+LiteGraph is a lightweight graph database with both relational and vector support, built using Sqlite, with support for exporting to GEXF.  LiteGraph is intended to be a multi-modal database primarily for providing persistence and retrieval for knowledge and artificial intelligence applications.
 
 ## Features
 
@@ -96,128 +96,127 @@ edge = Edge.create(
 
 ### Tenant Operations
 
-| Operation                | Method | Endpoint                           | Description                |
-| ------------------------ | ------ | ---------------------------------- | -------------------------- |
-| Check Tenant Exists      | HEAD   | `v1.0/tenants/{tenant_guid}`       | Check if a tenant exists    |
-| Create Tenant            | PUT    | `v1.0/tenants`                   | Create a new tenant        |
-| Get Tenant               | GET    | `v1.0/tenants/{tenant_guid}`       | Retrieve tenant details    |
-| Update Tenant            | PUT    | `v1.0/tenants/{tenant_guid}`       | Update tenant details      |
-| Delete Tenant            | DELETE | `v1.0/tenants/{tenant_guid}`       | Delete a tenant            |
-| Delete Tenant Forcefully | DELETE | `v1.0/tenants/{tenant_guid}?force` | Delete a tenant forcefully |
-| List Tenants             | GET    | `v1.0/tenants`                   | List all tenants           |
+| Method | Description | Parameters | Returns | Endpoint |
+|--------|-------------|------------|---------|----------|
+| HEAD | Check if a tenant exists | - tenant_guid: str | bool | `v1.0/tenants/{guid}` |
+| PUT | Create a new tenant | Request Body:<br>- name: str (optional)<br>- active: bool (default: True) | TenantMetadataModel:<br>- guid: str<br>- name: str<br>- active: bool<br>- created_utc: datetime<br>- last_update_utc: datetime | `v1.0/tenants` |
+| GET | Retrieve tenant details | - tenant_guid: str | TenantMetadataModel | `v1.0/tenants/{guid}` |
+| PUT | Update tenant details | Path:<br>- tenant_guid: str<br>Request Body:<br>- name: str (optional)<br>- active: bool (optional) | TenantMetadataModel | `v1.0/tenants/{guid}` |
+| DELETE | Delete a tenant | Path:<br>- tenant_guid: str<br>Query:<br>- force: bool (optional) | None | `v1.0/tenants/{guid}` |
+| GET | List all tenants | None | List[TenantMetadataModel] | `v1.0/tenants` |
 
 ### User Operations
 
-| Operation                | Method | Endpoint                           | Description                |
-| ------------------------ | ------ | ---------------------------------- | -------------------------- |
-| Check User Exists         | HEAD   | `v1.0/tenants/{tenant_guid}/users/{user_id}` | Check if a user exists    |
-| Create User               | PUT    | `v1.0/tenants/{tenant_guid}/users` | Create a new user          |
-| Get User                  | GET    | `v1.0/tenants/{tenant_guid}/users/{user_id}` | Retrieve user details    |
-| Update User               | PUT    | `v1.0/tenants/{tenant_guid}/users/{user_id}` | Update user details    |
-| Delete User               | DELETE | `v1.0/tenants/{tenant_guid}/users/{user_id}` | Delete user details    |
-| List Users                | GET    | `v1.0/tenants/{tenant_guid}/users` | List all users           |
+| Method | Description | Parameters | Returns | Endpoint |
+|--------|-------------|------------|---------|----------|
+| HEAD | Check if a user exists | Path:<br>- tenant_guid: str<br>- guid: str | bool | `v1.0/tenants/{tenant_guid}/users/{guid}` |
+| PUT | Create a new user | Request Body:<br>- first_name: str<br>- last_name: str<br>- email: str<br>- password: str<br>- active: bool (default: True) | UserMasterModel | `v1.0/tenants/{tenant_guid}/users` |
+| GET | Retrieve user details | Path:<br>- tenant_guid: str<br>- guid: str | UserMasterModel | `v1.0/tenants/{tenant_guid}/users/{guid}` |
+| PUT | Update user details | Path:<br>- tenant_guid: str<br>- guid: str<br>Request Body:<br>- first_name: str (optional)<br>- last_name: str (optional)<br>- email: str (optional)<br>- password: str (optional)<br>- active: bool (optional) | UserMasterModel | `v1.0/tenants/{tenant_guid}/users/{guid}` |
+| DELETE | Delete user | Path:<br>- tenant_guid: str<br>- guid: str | None | `v1.0/tenants/{tenant_guid}/users/{guid}` |
+| GET | List all users | Path:<br>- tenant_guid: str | List[UserMasterModel] | `v1.0/tenants/{tenant_guid}/users` |
 
 ### Credential Operations
 
-| Operation                | Method | Endpoint                           | Description                |
-| ------------------------ | ------ | ---------------------------------- | -------------------------- |
-| Check Credential Exists  | HEAD   | `v1.0/tenants/{tenant_guid}/credentials/{credential_id}` | Check if a credential exists    |
-| Create Credential         | PUT    | `v1.0/tenants/{tenant_guid}/credentials` | Create a new credential    |
-| Get Credential            | GET    | `v1.0/tenants/{tenant_guid}/credentials/{credential_id}` | Retrieve credential details |
-| Update Credential         | PUT    | `v1.0/tenants/{tenant_guid}/credentials/{credential_id}` | Update credential details |
-| Delete Credential         | DELETE | `v1.0/tenants/{tenant_guid}/credentials/{credential_id}` | Delete credential details |
-| List Credentials          | GET    | `v1.0/tenants/{tenant_guid}/credentials` | List all credentials      |
+| Method | Description | Parameters | Returns | Endpoint |
+|--------|-------------|------------|---------|----------|
+| HEAD | Check if a credential exists | Path:<br>- tenant_guid: str<br>- guid: str | bool | `v1.0/tenants/{tenant_guid}/credentials/{guid}` |
+| PUT | Create a new credential | Request Body:<br>- user_guid: str<br>- name: str (optional)<br>- bearer_token: str<br>- active: bool (default: True) | CredentialModel | `v1.0/tenants/{tenant_guid}/credentials` |
+| GET | Retrieve credential details | Path:<br>- tenant_guid: str<br>- guid: str | CredentialModel | `v1.0/tenants/{tenant_guid}/credentials/{guid}` |
+| PUT | Update credential details | Path:<br>- tenant_guid: str<br>- guid: str<br>Request Body:<br>- name: str (optional)<br>- bearer_token: str (optional)<br>- active: bool (optional) | CredentialModel | `v1.0/tenants/{tenant_guid}/credentials/{guid}` |
+| DELETE | Delete credential | Path:<br>- tenant_guid: str<br>- guid: str | None | `v1.0/tenants/{tenant_guid}/credentials/{guid}` |
+| GET | List all credentials | Path:<br>- tenant_guid: str | List[CredentialModel] | `v1.0/tenants/{tenant_guid}/credentials` |
 
 ### Label Operations
 
-| Operation                | Method | Endpoint                           | Description                |
-| ------------------------ | ------ | ---------------------------------- | -------------------------- |
-| Check Label Exists       | HEAD   | `v1.0/tenants/{tenant_guid}/labels/{label_id}` | Check if a label exists    |
-| Create Label             | PUT    | `v1.0/tenants/{tenant_guid}/labels` | Create a new label        |
-| Get Label                | GET    | `v1.0/tenants/{tenant_guid}/labels/{label_id}` | Retrieve label details    |
-| Update Label             | PUT    | `v1.0/tenants/{tenant_guid}/labels/{label_id}` | Update label details      |
-| Delete Label             | DELETE | `v1.0/tenants/{tenant_guid}/labels/{label_id}` | Delete label details      |
-| List Labels              | GET    | `v1.0/tenants/{tenant_guid}/labels` | List all labels           |
+| Method | Description | Parameters | Returns | Endpoint |
+|--------|-------------|------------|---------|----------|
+| HEAD | Check if a label exists | Path:<br>- tenant_guid: str<br>- guid: str | bool | `v1.0/tenants/{tenant_guid}/labels/{guid}` |
+| PUT | Create a new label | Request Body:<br>- graph_guid: str (optional)<br>- node_guid: str (optional)<br>- edge_guid: str (optional)<br>- label: str | LabelModel | `v1.0/tenants/{tenant_guid}/labels` |
+| GET | Retrieve label details | Path:<br>- tenant_guid: str<br>- guid: str | LabelModel | `v1.0/tenants/{tenant_guid}/labels/{guid}` |
+| PUT | Update label details | Path:<br>- tenant_guid: str<br>- guid: str<br>Request Body:<br>- label: str (optional)<br>- graph_guid: str (optional)<br>- node_guid: str (optional)<br>- edge_guid: str (optional) | LabelModel | `v1.0/tenants/{tenant_guid}/labels/{guid}` |
+| DELETE | Delete label | Path:<br>- tenant_guid: str<br>- guid: str | None | `v1.0/tenants/{tenant_guid}/labels/{guid}` |
+| GET | List all labels | Path:<br>- tenant_guid: str | List[LabelModel] | `v1.0/tenants/{tenant_guid}/labels` |
 
 ### Tag Operations
 
-| Operation                | Method | Endpoint                           | Description                |
-| ------------------------ | ------ | ---------------------------------- | -------------------------- |
-| Check Tag Exists         | HEAD   | `v1.0/tenants/{tenant_guid}/tags/{tag_id}` | Check if a tag exists    |
-| Create Tag               | PUT    | `v1.0/tenants/{tenant_guid}/tags` | Create a new tag        |
-| Get Tag                  | GET    | `v1.0/tenants/{tenant_guid}/tags/{tag_id}` | Retrieve tag details    |
-| Update Tag               | PUT    | `v1.0/tenants/{tenant_guid}/tags/{tag_id}` | Update tag details      |
-| Delete Tag               | DELETE | `v1.0/tenants/{tenant_guid}/tags/{tag_id}` | Delete tag details      |
-| List Tags                | GET    | `v1.0/tenants/{tenant_guid}/tags` | List all tags           |
+| Method | Description | Parameters | Returns | Endpoint |
+|--------|-------------|------------|---------|----------|
+| HEAD | Check if a tag exists | Path:<br>- tenant_guid: str<br>- guid: str | bool | `v1.0/tenants/{tenant_guid}/tags/{guid}` |
+| PUT | Create a new tag | Request Body:<br>- graph_guid: str (optional)<br>- node_guid: str (optional)<br>- edge_guid: str (optional)<br>- key: str<br>- value: str | TagModel | `v1.0/tenants/{tenant_guid}/tags` |
+| GET | Retrieve tag details | Path:<br>- tenant_guid: str<br>- guid: str | TagModel | `v1.0/tenants/{tenant_guid}/tags/{guid}` |
+| PUT | Update tag details | Path:<br>- tenant_guid: str<br>- guid: str<br>Request Body:<br>- key: str (optional)<br>- value: str (optional)<br>- graph_guid: str (optional)<br>- node_guid: str (optional)<br>- edge_guid: str (optional) | TagModel | `v1.0/tenants/{tenant_guid}/tags/{guid}` |
+| DELETE | Delete tag | Path:<br>- tenant_guid: str<br>- guid: str | None | `v1.0/tenants/{tenant_guid}/tags/{guid}` |
+| GET | List all tags | Path:<br>- tenant_guid: str | List[TagModel] | `v1.0/tenants/{tenant_guid}/tags` |
 
 ### Vector Operations
 
-| Operation                | Method | Endpoint                           | Description                |
-| ------------------------ | ------ | ---------------------------------- | -------------------------- |
-| Check Vector Exists      | HEAD   | `v1.0/tenants/{tenant_guid}/vectors/{vector_id}` | Check if a vector exists    |
-| Create Vector            | PUT    | `v1.0/tenants/{tenant_guid}/vectors` | Create a new vector        |
-| Get Vector              | GET    | `v1.0/tenants/{tenant_guid}/vectors/{vector_id}` | Retrieve vector details    |
-| Update Vector           | PUT    | `v1.0/tenants/{tenant_guid}/vectors/{vector_id}` | Update vector details      |
-| Delete Vector           | DELETE | `v1.0/tenants/{tenant_guid}/vectors/{vector_id}` | Delete vector details      |
-| List Vectors            | GET    | `v1.0/tenants/{tenant_guid}/vectors` | List all vectors           |
-| Search Vectors          | POST   | `v1.0/tenants/{tenant_guid}/vectors/search` | Search vectors by embeddings |
+| Method | Description | Parameters | Returns | Endpoint |
+|--------|-------------|------------|---------|----------|
+| HEAD | Check if a vector exists | Path:<br>- guid: str | bool | `v1.0/tenants/{tenant_guid}/vectors/{guid}` |
+| PUT | Create a new vector | Request Body:<br>- tenant_guid: UUID<br>- graph_guid: UUID (optional)<br>- vector: List[float]<br>- labels: List[str] (optional)<br>- tags: Dict[str, str] (optional) | VectorMetadataModel | `v1.0/tenants/{tenant_guid}/vectors` |
+| GET | Retrieve vector details | Path:<br>- guid: str | VectorMetadataModel | `v1.0/tenants/{tenant_guid}/vectors/{guid}` |
+| PUT | Update vector details | Path:<br>- guid: str<br>Request Body:<br>- vector: List[float] (optional)<br>- labels: List[str] (optional)<br>- tags: Dict[str, str] (optional) | VectorMetadataModel | `v1.0/tenants/{tenant_guid}/vectors/{guid}` |
+| DELETE | Delete vector | Path:<br>- guid: str | None | `v1.0/tenants/{tenant_guid}/vectors/{guid}` |
+| GET | List all vectors | Path:<br>- tenant_guid: str | List[VectorMetadataModel] | `v1.0/tenants/{tenant_guid}/vectors` |
+| POST | Search vectors | Request Body:<br>- domain: VectorSearchDomainEnum<br>- embeddings: List[float]<br>- tenant_guid: UUID<br>- graph_guid: UUID (optional)<br>- labels: List[str] (optional)<br>- tags: Dict[str, str] (optional)<br>- expr: ExprModel (optional)<br>- search_type: VectorSearchTypeEnum (optional) | VectorSearchResponseModel | `v1.0/tenants/{tenant_guid}/vectors/search` |
 
 ### Graph Operations
 
-| Operation            | Method | Endpoint                                                 | Description                 |
-| -------------------- | ------ | -------------------------------------------------------- | --------------------------- |
-| Create Graph         | PUT    | `v1.0/tenants/{tenant_guid}/graphs`                      | Create a new graph          |
-| Get Graph            | GET    | `v1.0/tenants/{tenant_guid}/graphs/{graph_id}`           | Retrieve a specific graph   |
-| Update Graph         | PUT    | `v1.0/tenants/{tenant_guid}/graphs/{graph_id}`           | Update an existing graph    |
-| Delete Graph         | DELETE | `v1.0/tenants/{tenant_guid}/graphs/{graph_id}`           | Delete a graph              |
-| List Graphs          | GET    | `v1.0/tenants/{tenant_guid}/graphs`                      | Retrieve all graphs         |
-| Search Graphs        | POST   | `v1.0/tenants/{tenant_guid}/graphs/search`               | Search for graphs           |
-| Export GEXF          | GET    | `v1.0/tenants/{tenant_guid}/graphs/{graph_id}/export`    | Export graph in GEXF format |
-| Exists Graph         | HEAD   | `v1.0/tenants/{tenant_guid}/graphs/{graph_id}`           | Check if a graph exists     |
-| BatchExistence Graph | POST   | `v1.0/tenants/{tenant_guid}/graphs/{graph_id}/existence` | BatchExistence              |
+| Method | Description | Parameters | Returns | Endpoint |
+|--------|-------------|------------|---------|----------|
+| HEAD | Check if a graph exists | Path:<br>- tenant_guid: str<br>- guid: str | bool | `v1.0/tenants/{tenant_guid}/graphs/{guid}` |
+| PUT | Create a new graph | Request Body:<br>- name: str (optional)<br>- labels: List[str] (optional)<br>- tags: Dict[str, str] (optional)<br>- vectors: List (optional)<br>- data: Dict (optional) | GraphModel | `v1.0/tenants/{tenant_guid}/graphs` |
+| GET | Retrieve graph details | Path:<br>- tenant_guid: str<br>- guid: str | GraphModel | `v1.0/tenants/{tenant_guid}/graphs/{guid}` |
+| PUT | Update graph details | Path:<br>- tenant_guid: str<br>- guid: str<br>Request Body:<br>- name: str (optional)<br>- labels: List[str] (optional)<br>- tags: Dict[str, str] (optional)<br>- vectors: List (optional)<br>- data: Dict (optional) | GraphModel | `v1.0/tenants/{tenant_guid}/graphs/{guid}` |
+| DELETE | Delete graph | Path:<br>- tenant_guid: str<br>- guid: str | None | `v1.0/tenants/{tenant_guid}/graphs/{guid}` |
+| GET | List all graphs | Path:<br>- tenant_guid: str | List[GraphModel] | `v1.0/tenants/{tenant_guid}/graphs` |
+| POST | Search graphs | Request Body:<br>- expr: ExprModel<br>- ordering: str (optional) | List[GraphModel] | `v1.0/tenants/{tenant_guid}/graphs/search` |
+| GET | Export graph to GEXF | Path:<br>- tenant_guid: str<br>- guid: str | str (GEXF format) | `v1.0/tenants/{tenant_guid}/graphs/{guid}/export` |
+| POST | Batch existence check | Path:<br>- tenant_guid: str<br>- guid: str<br>Request Body:<br>- nodes: List[str]<br>- edges: List[str]<br>- edges_between: List[EdgeBetweenModel] | ExistenceResultModel | `v1.0/tenants/{tenant_guid}/graphs/{guid}/existence` |
 
 ### Node Operations
 
-| Operation            | Method | Endpoint                                                       | Description                   |
-| -------------------- | ------ | -------------------------------------------------------------- | ----------------------------- |
-| Create Node          | PUT    | `v1.0/tenants/{tenant_guid}/graphs/{graph_id}/nodes`           | Create a new node             |
-| Create Multiple Node | PUT    | `v1.0/tenants/{tenant_guid}/graphs/{graph_id}/nodes/multiple`  | Create new nodes              |
-| Get Node             | GET    | `v1.0/tenants/{tenant_guid}/graphs/{graph_id}/nodes/{node_id}` | Retrieve a specific node      |
-| Update Node          | PUT    | `v1.0/tenants/{tenant_guid}/graphs/{graph_id}/nodes/{node_id}` | Update an existing node       |
-| Delete Node          | DELETE | `v1.0/tenants/{tenant_guid}/graphs/{graph_id}/nodes/{node_id}` | Delete a node                 |
-| Delete Multiple Node | DELETE | `v1.0/tenants/{tenant_guid}/graphs/{graph_id}/nodes/multiple`  | Delete nodes                  |
-| Delete All Node      | DELETE | `v1.0/tenants/{tenant_guid}/graphs/{graph_id}/nodes/all`       | Delete all nodes              |
-| List Nodes           | GET    | `v1.0/tenants/{tenant_guid}/graphs/{graph_id}/nodes`           | Retrieve all nodes in a graph |
-| Search Nodes         | POST   | `v1.0/tenants/{tenant_guid}/graphs/{graph_id}/nodes/search`    | Search for nodes              |
-| Exists Nodes         | HEAD   | `v1.0/tenants/{tenant_guid}/graphs/{graph_id}/nodes/{node_id}` | Check if a node exists        |
+| Method | Description | Parameters | Returns | Endpoint |
+|--------|-------------|------------|---------|----------|
+| HEAD | Check if a node exists | Path:<br>- tenant_guid: str<br>- graph_guid: str<br>- guid: str | bool | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/nodes/{guid}` |
+| PUT | Create a new node | Path:<br>- tenant_guid: str<br>- graph_guid: str<br>Request Body:<br>- name: str (optional)<br>- data: Dict (optional)<br>- labels: List (optional)<br>- tags: Dict (optional)<br>- vectors: List (optional) | NodeModel | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/nodes` |
+| PUT | Create multiple nodes | Path:<br>- tenant_guid: str<br>- graph_guid: str<br>Request Body:<br>List of node objects | List[NodeModel] | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/nodes/multiple` |
+| GET | Retrieve node details | Path:<br>- tenant_guid: str<br>- graph_guid: str<br>- guid: str | NodeModel | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/nodes/{guid}` |
+| PUT | Update node details | Path:<br>- tenant_guid: str<br>- graph_guid: str<br>- guid: str<br>Request Body:<br>- name: str (optional)<br>- data: Dict (optional)<br>- labels: List (optional)<br>- tags: Dict (optional)<br>- vectors: List (optional) | NodeModel | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/nodes/{guid}` |
+| DELETE | Delete node | Path:<br>- tenant_guid: str<br>- graph_guid: str<br>- guid: str | None | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/nodes/{guid}` |
+| DELETE | Delete multiple nodes | Path:<br>- tenant_guid: str<br>- graph_guid: str<br>Request Body:<br>- List[str] (guids) | None | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/nodes/multiple` |
+| DELETE | Delete all nodes | Path:<br>- tenant_guid: str<br>- graph_guid: str | None | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/nodes/all` |
+| GET | List all nodes | Path:<br>- tenant_guid: str<br>- graph_guid: str | List[NodeModel] | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/nodes` |
+| POST | Search nodes | Path:<br>- tenant_guid: str<br>- graph_guid: str<br>Request Body:<br>- expr: ExprModel<br>- ordering: str (optional) | List[NodeModel] | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/nodes/search` |
 
 ### Edge Operations
 
-| Operation            | Method | Endpoint                                                       | Description                   |
-| -------------------- | ------ | -------------------------------------------------------------- | ----------------------------- |
-| Create Edge          | PUT    | `v1.0/tenants/{tenant_guid}/graphs/{graph_id}/edges`           | Create a new edge             |
-| Create Multiple Edge | PUT    | `v1.0/tenants/{tenant_guid}/graphs/{graph_id}/edges/multiple`  | Create new edges              |
-| Get Edge             | GET    | `v1.0/tenants/{tenant_guid}/graphs/{graph_id}/edges/{edge_id}` | Retrieve a specific edge      |
-| Update Edge          | PUT    | `v1.0/tenants/{tenant_guid}/graphs/{graph_id}/edges/{edge_id}` | Update an existing edge       |
-| Delete Edge          | DELETE | `v1.0/tenants/{tenant_guid}/graphs/{graph_id}/edges/{edge_id}` | Delete an edge                |
-| Delete Multiple Edge | DELETE | `v1.0/tenants/{tenant_guid}/graphs/{graph_id}/edges/multiple`  | Delete edges                  |
-| Delete All Edge      | DELETE | `v1.0/tenants/{tenant_guid}/graphs/{graph_id}/edges/all`       | Delete all edges              |
-| List Edges           | GET    | `v1.0/tenants/{tenant_guid}/graphs/{graph_id}/edges`           | Retrieve all edges in a graph |
-| Search Edges         | POST   | `v1.0/tenants/{tenant_guid}/graphs/{graph_id}/edges/search`    | Search for edges              |
-| Exists Edges         | HEAD   | `v1.0/tenants/{tenant_guid}/graphs/{graph_id}/edges/{edge_id}` | Check if an edge exists       |
+| Method | Description | Parameters | Returns | Endpoint |
+|--------|-------------|------------|---------|----------|
+| HEAD | Check if an edge exists | Path:<br>- tenant_guid: str<br>- graph_guid: str<br>- guid: str | bool | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/edges/{guid}` |
+| PUT | Create a new edge | Path:<br>- tenant_guid: str<br>- graph_guid: str<br>Request Body:<br>- name: str (optional)<br>- from_guid: str<br>- to_guid: str<br>- cost: int (default: 0)<br>- data: Dict (optional)<br>- labels: List (optional)<br>- tags: Dict (optional) | EdgeModel | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/edges` |
+| PUT | Create multiple edges | Path:<br>- tenant_guid: str<br>- graph_guid: str<br>Request Body:<br>List of edge objects | List[EdgeModel] | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/edges/multiple` |
+| GET | Retrieve edge details | Path:<br>- tenant_guid: str<br>- graph_guid: str<br>- guid: str | EdgeModel | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/edges/{guid}` |
+| PUT | Update edge details | Path:<br>- tenant_guid: str<br>- graph_guid: str<br>- guid: str<br>Request Body:<br>- name: str (optional)<br>- cost: int (optional)<br>- data: Dict (optional)<br>- labels: List (optional)<br>- tags: Dict (optional) | EdgeModel | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/edges/{guid}` |
+| DELETE | Delete edge | Path:<br>- tenant_guid: str<br>- graph_guid: str<br>- guid: str | None | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/edges/{guid}` |
+| DELETE | Delete multiple edges | Path:<br>- tenant_guid: str<br>- graph_guid: str<br>Request Body:<br>- List[str] (guids) | None | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/edges/multiple` |
+| DELETE | Delete all edges | Path:<br>- tenant_guid: str<br>- graph_guid: str | None | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/edges/all` |
+| GET | List all edges | Path:<br>- tenant_guid: str<br>- graph_guid: str | List[EdgeModel] | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/edges` |
+| POST | Search edges | Path:<br>- tenant_guid: str<br>- graph_guid: str<br>Request Body:<br>- expr: ExprModel<br>- ordering: str (optional) | List[EdgeModel] | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/edges/search` |
 
 ### Route Operations
 
-| Operation               | Method | Endpoint                                                                  | Description              |
-| ----------------------- | ------ | ------------------------------------------------------------------------- | ------------------------ |
-| Get Routes              | POST   | `v1.0/tenants/{tenant_guid}/graphs/{graph_id}/routes`                     | Find routes              |
-| Get Edges from node     | GET    | `v1.0/tenants/{tenant_guid}/graphs/{graph_id}/nodes/{node_id}/edges/from` | Find Edges from a node   |
-| Get Edges to node       | GET    | `v1.0/tenants/{tenant_guid}/graphs/{graph_id}/nodes/{node_id}/edges/to`   | Find Edges to a node     |
-| Get Edges between nodes | GET    | `v1.0/tenants/{tenant_guid}/graphs/{graph_id}/edges/between?from=&to=`    | Find edges between nodes |
-| Get Node Edges          | GET    | `v1.0/tenants/{tenant_guid}/graphs/{graph_id}/nodes/{node_id}`            | Find Nodes Edges         |
-| Get Node Neighbors      | GET    | `v1.0/tenants/{tenant_guid}/graphs/{graph_id}/nodes/{node_id}/neighbors`  | Find neighbors of a node |
-| Get Node Parents        | GET    | `v1.0/tenants/{tenant_guid}/graphs/{graph_id}/nodes/{node_id}/parents`    | Find parents of a node   |
-| Get Node Children       | GET    | `v1.0/tenants/{tenant_guid}/graphs/{graph_id}/nodes/{node_id}/children`   | Find children of a node  |
+| Method | Description | Parameters | Returns | Endpoint |
+|--------|-------------|------------|---------|----------|
+| POST | Find routes | Path:<br>- tenant_guid: str<br>- graph_guid: str<br>Request Body:<br>- from_guid: str<br>- to_guid: str<br>- edge_filter: SearchRequest (optional)<br>- node_filter: SearchRequest (optional) | RouteResultModel | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/routes` |
+| GET | Get edges from node | Path:<br>- tenant_guid: str<br>- graph_guid: str<br>- guid: str | List[EdgeModel] | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/nodes/{guid}/edges/from` |
+| GET | Get edges to node | Path:<br>- tenant_guid: str<br>- graph_guid: str<br>- guid: str | List[EdgeModel] | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/nodes/{guid}/edges/to` |
+| GET | Get edges between nodes | Path:<br>- tenant_guid: str<br>- graph_guid: str<br>Query:<br>- from: str<br>- to: str | List[EdgeModel] | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/edges/between` |
+| GET | Get node edges | Path:<br>- tenant_guid: str<br>- graph_guid: str<br>- guid: str | NodeModel with edges | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/nodes/{guid}` |
+| GET | Get node neighbors | Path:<br>- tenant_guid: str<br>- graph_guid: str<br>- guid: str | List[NodeModel] | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/nodes/{guid}/neighbors` |
+| GET | Get node parents | Path:<br>- tenant_guid: str<br>- graph_guid: str<br>- guid: str | List[NodeModel] | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/nodes/{guid}/parents` |
+| GET | Get node children | Path:<br>- tenant_guid: str<br>- graph_guid: str<br>- guid: str | List[NodeModel] | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/nodes/{guid}/children` |
 
 ## Core Components
 
