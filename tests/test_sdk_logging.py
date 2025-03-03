@@ -4,8 +4,8 @@ import tempfile
 from datetime import datetime
 
 import pytest
-from litegraph_sdk.enums.severity_enum import Severity_Enum
-from litegraph_sdk.sdk_logging import (
+from litegraph.enums.severity_enum import Severity_Enum
+from litegraph.sdk_logging import (
     add_file_logging,
     console_handler,
     format_log_message,
@@ -61,7 +61,7 @@ def reset_logger():
 
 def test_logger_initialization():
     """Test initial logger configuration."""
-    assert logger.name == "litegraph_sdk"
+    assert logger.name == "litegraph"
     assert logger.level == logging.DEBUG
     assert console_handler in logger.handlers
     assert console_handler.level == logging.INFO

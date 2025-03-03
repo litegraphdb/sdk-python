@@ -3,10 +3,10 @@ from datetime import datetime, timezone
 from unittest.mock import Mock, patch
 
 import pytest
-from litegraph_sdk.models.existence_request import ExistenceRequestModel
-from litegraph_sdk.models.existence_result import ExistenceResultModel
-from litegraph_sdk.models.graphs import GraphModel
-from litegraph_sdk.resources.graphs import Graph
+from litegraph.models.existence_request import ExistenceRequestModel
+from litegraph.models.existence_result import ExistenceResultModel
+from litegraph.models.graphs import GraphModel
+from litegraph.resources.graphs import Graph
 from pydantic import ValidationError
 
 
@@ -16,7 +16,7 @@ def mock_client(monkeypatch):
     client = Mock()
     client.graph_guid = "test-graph-guid"
     client.base_url = "http://test-api.com"
-    monkeypatch.setattr("litegraph_sdk.configuration._client", client)
+    monkeypatch.setattr("litegraph.configuration._client", client)
     return client
 
 
@@ -223,7 +223,7 @@ def test_batch_existence(mock_client):
     mock_client.request.return_value = {}
 
     graph_guid = "550e8400-e29b-41d4-a716-446655440000"
-    with patch("litegraph_sdk.configuration._client", mock_client):
+    with patch("litegraph.configuration._client", mock_client):
         response = Graph.batch_existence(graph_guid=graph_guid, request=valid_request)
     assert isinstance(response, ExistenceResultModel)
 

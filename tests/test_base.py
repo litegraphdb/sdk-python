@@ -3,9 +3,9 @@ from unittest.mock import Mock, patch
 
 import httpx
 import pytest
-from litegraph_sdk.base import BaseClient
-from litegraph_sdk.enums.api_error_enum import ApiError_Enum
-from litegraph_sdk.exceptions import SdkException, ServerError
+from litegraph.base import BaseClient
+from litegraph.enums.api_error_enum import ApiError_Enum
+from litegraph.exceptions import SdkException, ServerError
 
 
 @pytest.fixture

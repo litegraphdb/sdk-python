@@ -2,8 +2,8 @@ import uuid
 from datetime import datetime, timezone
 
 import pytest
-from litegraph_sdk.models.graphs import GraphModel
-from litegraph_sdk.models.search_graphs import SearchResultGraph
+from litegraph.models.graphs import GraphModel
+from litegraph.models.search_graphs import SearchResultGraph
 from pydantic import ValidationError
 
 

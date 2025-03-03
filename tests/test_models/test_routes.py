@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from unittest.mock import Mock, patch
 
 import pytest
-from litegraph_sdk.models.route_response import RouteResultModel, Timestamp
+from litegraph.models.route_response import RouteResultModel, Timestamp
 
 
 class MockBaseClient:
@@ -28,15 +28,15 @@ def mock_base_client():
 
 @pytest.fixture(autouse=True)
 def mock_configuration(mock_base_client):
-    with patch("litegraph_sdk.configuration._client", mock_base_client), patch(
-        "litegraph_sdk.configuration.get_client", return_value=mock_base_client
+    with patch("litegraph.configuration._client", mock_base_client), patch(
+        "litegraph.configuration.get_client", return_value=mock_base_client
     ):
         yield mock_base_client
 
 
 @pytest.fixture
 def routes_class():
-    from litegraph_sdk.resources.routes import Routes
+    from litegraph.resources.routes import Routes
 
     return Routes
 
@@ -65,7 +65,7 @@ def route_request_data():
 
 
 class TestRoutesClass:
-    @patch("litegraph_sdk.utils.url_helper._get_url")
+    @patch("litegraph.utils.url_helper._get_url")
     def test_routes_basic_functionality(
         self,
         mock_get_url,
@@ -88,7 +88,7 @@ class TestRoutesClass:
         assert isinstance(result.Routes[0].Edges, list)
         assert len(result.Routes[0].Edges) == 2
 
-    @patch("litegraph_sdk.utils.url_helper._get_url")
+    @patch("litegraph.utils.url_helper._get_url")
     def test_routes_with_no_graph_guid(
         self, mock_get_url, routes_class, mock_response_data, mock_configuration
     ):

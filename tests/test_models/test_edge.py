@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timezone
 
 import pytest
-from litegraph_sdk.models.edge import EdgeModel
+from litegraph.models.edge import EdgeModel
 from pydantic import ValidationError
 
 

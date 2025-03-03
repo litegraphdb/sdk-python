@@ -2,12 +2,12 @@ import uuid
 from datetime import datetime, timezone
 
 import pytest
-from litegraph_sdk.enums.enumeration_order_enum import EnumerationOrder_Enum
-from litegraph_sdk.enums.operator_enum import Opertator_Enum
-from litegraph_sdk.models.edge import EdgeModel
-from litegraph_sdk.models.expression import ExprModel
-from litegraph_sdk.models.node import NodeModel
-from litegraph_sdk.models.search_node_edge import (
+from litegraph.enums.enumeration_order_enum import EnumerationOrder_Enum
+from litegraph.enums.operator_enum import Opertator_Enum
+from litegraph.models.edge import EdgeModel
+from litegraph.models.expression import ExprModel
+from litegraph.models.node import NodeModel
+from litegraph.models.search_node_edge import (
     SearchRequest,
     SearchResult,
     SearchResultEdge,

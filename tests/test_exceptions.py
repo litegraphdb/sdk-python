@@ -1,6 +1,6 @@
 import pytest
-from litegraph_sdk.enums.api_error_enum import ERROR_DESCRIPTIONS, ApiError_Enum
-from litegraph_sdk.exceptions import (
+from litegraph.enums.api_error_enum import ERROR_DESCRIPTIONS, ApiError_Enum
+from litegraph.exceptions import (
     AuthenticationError,
     AuthorizationError,
     BadRequestError,

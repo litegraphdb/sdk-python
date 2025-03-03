@@ -1,6 +1,6 @@
 import pytest
-from litegraph_sdk.enums.operator_enum import Opertator_Enum
-from litegraph_sdk.models.expression import ExprModel
+from litegraph.enums.operator_enum import Opertator_Enum
+from litegraph.models.expression import ExprModel
 from pydantic import ValidationError
 
 

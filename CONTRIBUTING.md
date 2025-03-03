@@ -94,7 +94,7 @@ Steps to reproduce: Instantiate the widget and call .ShiftRight()
 Sample code demonstrating the problem:
 
 ```python
-from litegraph_sdk import configure
+from litegraph import configure
 
 configure(
     endpoint="https://api.litegraph.com",

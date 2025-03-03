@@ -1,6 +1,6 @@
 import pytest
 from urllib.parse import urlparse, parse_qs
-from litegraph_sdk.utils.url_helper import _get_url
+from litegraph.utils.url_helper import _get_url
 
 class MockResource:
     """Mock resource class for testing."""

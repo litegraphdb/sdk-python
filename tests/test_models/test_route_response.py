@@ -2,8 +2,8 @@ import uuid
 from datetime import datetime, timezone
 
 import pytest
-from litegraph_sdk.models.edge import EdgeModel
-from litegraph_sdk.models.route_response import (
+from litegraph.models.edge import EdgeModel
+from litegraph.models.route_response import (
     RouteDetailModel,
     RouteResultModel,
     Timestamp,

@@ -1,23 +1,23 @@
 import sys
 
 import pytest
-from litegraph_sdk.base import BaseClient
-from litegraph_sdk.configuration import configure, get_client
+from litegraph.base import BaseClient
+from litegraph.configuration import configure, get_client
 
 
 @pytest.fixture(autouse=True)
 def reset_client():
     """Fixture to reset the global client before and after each test."""
     # Store the original client
-    original_client = sys.modules["litegraph_sdk.configuration"]._client
+    original_client = sys.modules["litegraph.configuration"]._client
 
     # Reset client to None
-    sys.modules["litegraph_sdk.configuration"]._client = None
+    sys.modules["litegraph.configuration"]._client = None
 
     yield
 
     # Restore the original state after the test
-    sys.modules["litegraph_sdk.configuration"]._client = original_client
+    sys.modules["litegraph.configuration"]._client = original_client
 
 
 def test_configure_with_endpoint_only():
@@ -131,7 +131,7 @@ def test_client_attribute_access():
 def test_get_client_without_configuration():
     """Test that get_client raises ValueError when client is not configured."""
     # Import the module directly to access _client
-    import litegraph_sdk.configuration as config
+    import litegraph.configuration as config
 
     # Explicitly set _client to None
     config._client = None

@@ -3,10 +3,10 @@ from unittest.mock import Mock, patch
 
 import httpx
 import pytest
-from litegraph_sdk.configuration import configure
-from litegraph_sdk.exceptions import BadRequestError, ResourceNotFoundError
-from litegraph_sdk.models.edge import EdgeModel
-from litegraph_sdk.resources.routes_between import RouteEdges
+from litegraph.configuration import configure
+from litegraph.exceptions import BadRequestError, ResourceNotFoundError
+from litegraph.models.edge import EdgeModel
+from litegraph.resources.routes_between import RouteEdges
 
 
 # Fixtures

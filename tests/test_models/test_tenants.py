@@ -3,8 +3,8 @@ from datetime import datetime, timezone
 from unittest.mock import Mock, patch
 
 import pytest
-from litegraph_sdk.models.tenant_metadata import TenantMetadataModel
-from litegraph_sdk.resources.tenants import Tenant
+from litegraph.models.tenant_metadata import TenantMetadataModel
+from litegraph.resources.tenants import Tenant
 
 
 @pytest.fixture
@@ -29,7 +29,7 @@ def mock_client(monkeypatch):
     """Create a mock client and configure it."""
     client = Mock()
     client.base_url = "http://test-api.com"
-    monkeypatch.setattr("litegraph_sdk.configuration._client", client)
+    monkeypatch.setattr("litegraph.configuration._client", client)
     return client
 
 

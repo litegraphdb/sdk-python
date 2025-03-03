@@ -1,9 +1,9 @@
 from datetime import datetime, timezone
 
 import pytest
-from litegraph_sdk.models.edge import EdgeModel
-from litegraph_sdk.models.node import NodeModel
-from litegraph_sdk.resources.route_traversal import RouteNodes
+from litegraph.models.edge import EdgeModel
+from litegraph.models.node import NodeModel
+from litegraph.resources.route_traversal import RouteNodes
 from pydantic import ValidationError
 
 
@@ -27,7 +27,7 @@ def mock_client(monkeypatch):
             return []
 
     client = MockClient()
-    monkeypatch.setattr("litegraph_sdk.configuration._client", client)
+    monkeypatch.setattr("litegraph.configuration._client", client)
     return client
 
 

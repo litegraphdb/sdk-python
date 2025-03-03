@@ -1,6 +1,6 @@
 import pytest
-from litegraph_sdk.enums.api_error_enum import ERROR_DESCRIPTIONS, ApiError_Enum
-from litegraph_sdk.models.api_error import ApiErrorResponseModel
+from litegraph.enums.api_error_enum import ERROR_DESCRIPTIONS, ApiError_Enum
+from litegraph.models.api_error import ApiErrorResponseModel
 from pydantic import ValidationError
 
 

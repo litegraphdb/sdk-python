@@ -1,4 +1,4 @@
-# litegraph_sdk
+# litegraph
 
 Add a short description here!
 

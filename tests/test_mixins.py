@@ -3,8 +3,8 @@ from typing import Optional
 from unittest.mock import Mock, patch
 
 import pytest
-from litegraph_sdk.base import BaseClient
-from litegraph_sdk.mixins import (
+from litegraph.base import BaseClient
+from litegraph.mixins import (
     AllRetrievableAPIResource,
     CreateableAPIResource,
     CreateableMultipleAPIResource,
@@ -18,7 +18,7 @@ from litegraph_sdk.mixins import (
     ExportGexfMixin,
 )
 from pydantic import BaseModel
-from litegraph_sdk.exceptions import SdkException
+from litegraph.exceptions import SdkException
 
 
 # Test Models
@@ -75,7 +75,7 @@ def mock_client(monkeypatch):
     client.tenant_guid = "test-tenant-guid"
     client.graph_guid = "test-graph-guid"
     client.base_url = "http://test-api.com"
-    monkeypatch.setattr("litegraph_sdk.configuration._client", client)
+    monkeypatch.setattr("litegraph.configuration._client", client)
     return client
 
 

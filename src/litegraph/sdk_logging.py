@@ -2,7 +2,7 @@ import logging
 from typing import Optional
 
 # Set up a logger for the SDK
-logger = logging.getLogger("litegraph_sdk")
+logger = logging.getLogger("litegraph")
 logger.setLevel(logging.DEBUG)
 
 # Create a console handler with a default log level

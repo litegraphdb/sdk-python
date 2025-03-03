@@ -1,5 +1,5 @@
 """
-    Dummy conftest.py for litegraph_sdk.
+    Dummy conftest.py for litegraph.
 
     If you don't know what this is for, just leave it empty.
     Read more about conftest.py under:

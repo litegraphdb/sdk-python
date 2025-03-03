@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timezone
 
 import pytest
-from litegraph_sdk.models.node import NodeModel
+from litegraph.models.node import NodeModel
 from pydantic import ValidationError
 
 

@@ -29,13 +29,13 @@ LiteGraph is a lightweight graph database with both relational and vector suppor
 ## Installation
 
 ```bash
-pip install litegraph_sdk
+pip install litegraph
 ```
 
 ## Quick Start
 
 ```python
-from litegraph_sdk import configure, Graph, Node, Edge
+from litegraph import configure, Graph, Node, Edge
 import uuid
 
 # Configure the SDK with tenant GUID and access key
@@ -236,7 +236,7 @@ edge = Edge.create(
 The SDK provides powerful search functionality through the `SearchRequest` class:
 
 ```python
-from litegraph_sdk import Graph
+from litegraph import Graph
 
 # Search for graphs by name
 search_request = {
@@ -266,7 +266,7 @@ The SDK includes comprehensive error handling with specific exception types:
 The SDK includes a built-in logging system that can be configured:
 
 ```python
-from litegraph_sdk.sdk_logging import set_log_level, log_info
+from litegraph.sdk_logging import set_log_level, log_info
 
 # Set logging level
 set_log_level("DEBUG")
@@ -280,10 +280,10 @@ log_info("INFO", "This is an info message")
 ### Graphs
 
 ```python
-from litegraph_sdk import Graph
-from litegraph_sdk.configuration import configure
-from litegraph_sdk.models.existence_request import ExistenceRequestModel
-from litegraph_sdk.models.edge_between import EdgeBetweenModel
+from litegraph import Graph
+from litegraph.configuration import configure
+from litegraph.models.existence_request import ExistenceRequestModel
+from litegraph.models.edge_between import EdgeBetweenModel
 
 # Configure with tenant GUID and access key
 configure(
@@ -346,8 +346,8 @@ existence_results = Graph.batch_existence(graph_guid="graph-guid", request=reque
 ### Nodes
 
 ```python
-from litegraph_sdk import Node
-from litegraph_sdk.configuration import configure
+from litegraph import Node
+from litegraph.configuration import configure
 
 # Configure with tenant GUID and access key
 configure(
@@ -420,8 +420,8 @@ node_results = Node.search(graph_guid="graph-guid", **search_request)
 ### Edges
 
 ```python
-from litegraph_sdk import Edge
-from litegraph_sdk.configuration import configure
+from litegraph import Edge
+from litegraph.configuration import configure
 
 # Configure with tenant GUID and access key
 configure(
@@ -497,9 +497,9 @@ edge_results = Edge.search(graph_guid="graph-guid", **search_request)
 ### Vectors
 
 ```python
-from litegraph_sdk import Vector
-from litegraph_sdk.enums.vector_search_domain_enum import VectorSearchDomainEnum
-from litegraph_sdk.configuration import configure
+from litegraph import Vector
+from litegraph.enums.vector_search_domain_enum import VectorSearchDomainEnum
+from litegraph.configuration import configure
 
 # Configure with tenant GUID and access key
 configure(
@@ -548,8 +548,8 @@ search_results = Vector.search_vectors(
 ## Route and Traversal
 
 ```python
-from litegraph_sdk.resources.route_traversal import RouteNodes
-from litegraph_sdk.configuration import configure
+from litegraph.resources.route_traversal import RouteNodes
+from litegraph.configuration import configure
 
 base = "URL"
 configure(base_url,"graph_guid")
@@ -575,11 +575,11 @@ neighbors_node = RouteNodes.neighbors("graph_guid","node_guid")
 
 
 # Find Edges in between of a Node
-from litegraph_sdk.resources.routes_between import RouteEdges
+from litegraph.resources.routes_between import RouteEdges
 between_nodes = RouteEdges.between("graph_guid","node_guid(from)","node_guid(to)")
 
 # Find Routes
-from litegraph_sdk.resources.routes import Routes
+from litegraph.resources.routes import Routes
 routes_data = {
     "Graph": "graph_guid",
     "From": "node_guid",
@@ -602,7 +602,7 @@ routes = Routes.routes("graph_guid",**routes_data)
 The SDK client can be configured with custom settings:
 
 ```python
-from litegraph_sdk import configure
+from litegraph import configure
 
 configure(
     endpoint="https://api.litegraph.com",
@@ -616,8 +616,8 @@ configure(
 ### Tenant Management
 
 ```python
-from litegraph_sdk import Tenant
-from litegraph_sdk.configuration import configure
+from litegraph import Tenant
+from litegraph.configuration import configure
 
 # Configure with admin access
 configure(endpoint="https://api.litegraph.com", access_key="admin-access-key")
@@ -683,7 +683,7 @@ To run specific test environments:
 tox -e default
 
 # Run tests with coverage report
-tox -- --cov litegraph_sdk --cov-report term-missing
+tox -- --cov litegraph --cov-report term-missing
 
 # Build documentation
 tox -e docs
