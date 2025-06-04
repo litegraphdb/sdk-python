@@ -16,6 +16,7 @@ from ..mixins import (
 from ..models.existence_request import ExistenceRequestModel
 from ..models.existence_result import ExistenceResultModel
 from ..models.graphs import GraphModel
+from ..models.read_first_request import ReadFirstRequest
 from ..models.search_graphs import SearchRequestGraph, SearchResultGraph
 from ..utils.url_helper import _get_url
 
@@ -40,6 +41,7 @@ class Graph(
     SEARCH_MODELS = SearchRequestGraph, SearchResultGraph
     EXISTENCE_REQUEST_MODEL: Type[BaseModel] = ExistenceRequestModel
     EXISTENCE_RESPONSE_MODEL: Type[BaseModel] = ExistenceResultModel
+    REQUIRE_TENANT = True
 
     @classmethod
     def delete(cls, resource_id: str, force: bool = False) -> None:
@@ -99,3 +101,20 @@ class Graph(
         if include_data:
             params["incldata"] = None
         return super().export_gexf(graph_id, **params)
+
+    @classmethod
+    def read_first(cls, **kwargs) -> GraphModel:
+        """
+        Read the first resource.
+
+        Args:
+            readFirstRequest: Additional keyword arguments to pass to the request.
+
+        Returns:
+            The first resource.
+        """
+        client = get_client()
+
+        url = _get_url(cls, client.tenant_guid, "first")
+        response = client.request("POST", url, json=kwargs)
+        return cls.MODEL.model_validate(response)
