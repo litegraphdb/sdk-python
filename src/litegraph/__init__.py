@@ -7,6 +7,7 @@ from .enums.operator_enum import Opertator_Enum
 from .models.edge import EdgeModel
 from .models.expression import ExprModel
 from .models.node import NodeModel
+from .models.backup import BackupModel
 from .models.route_detail import RouteDetailModel
 from .models.route_request import RouteRequestModel
 from .models.route_response import RouteResultModel
@@ -25,3 +26,4 @@ from .resources.tags import Tag
 from .resources.tenants import Tenant
 from .resources.users import User
 from .resources.vectors import Vector
+from .resources.admin import Admin
