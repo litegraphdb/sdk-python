@@ -32,6 +32,12 @@ LiteGraph is a lightweight graph database with both relational and vector suppor
 pip install litegraph
 ```
 
+or you can install the latest version from the repository
+
+```bash
+pip install git+https://github.com/view-io/sdk-python.git
+```
+
 ## Quick Start
 
 ```python
