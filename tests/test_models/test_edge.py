@@ -4,6 +4,18 @@ from datetime import datetime, timezone
 import pytest
 from litegraph.models.edge import EdgeModel
 from pydantic import ValidationError
+from litegraph.resources.edges import Edge
+from litegraph.models.enumeration_result import EnumerationResultModel
+from unittest.mock import Mock
+
+
+@pytest.fixture
+def mock_client(monkeypatch):
+    """Create a mock client and configure it."""
+    client = Mock()
+    client.base_url = "http://test-api.com"
+    monkeypatch.setattr("litegraph.configuration._client", client)
+    return client
 
 
 @pytest.fixture
@@ -209,3 +221,107 @@ def test_model_config():
     assert "GUID" in exported
     assert "GraphGUID" in exported
     assert "Name" in exported
+
+
+def test_edge_enumerate_with_query(mock_client):
+    """Test enumerating edges with a query."""
+    mock_response = {
+        "Success": True,
+        "MaxResults": 25,
+        "IterationsRequired": 1,
+        "ContinuationToken": None,
+        "EndOfResults": True,
+        "TotalRecords": 2,
+        "RecordsRemaining": 0,
+        "Objects": [
+            {
+                "GUID": "edge1", 
+                "Name": "Edge 1", 
+                "TenantGUID": "tenant1", 
+                "GraphGUID": "graph1",
+                "From": "node1",
+                "To": "node2"
+            },
+            {
+                "GUID": "edge2", 
+                "Name": "Edge 2", 
+                "TenantGUID": "tenant1", 
+                "GraphGUID": "graph1",
+                "From": "node2",
+                "To": "node3"
+            }
+        ],
+        "Timestamp": {
+            "Start": "2023-01-01T00:00:00Z",
+            "End": "2023-01-01T00:00:01Z",
+            "TotalMS": 300.0,
+            "Messages": {},
+            "Metadata": None
+        }
+    }
+    mock_client.request.return_value = mock_response
+    
+    from litegraph.models.expression import ExprModel
+    from litegraph.enums.operator_enum import Opertator_Enum
+    
+    result = Edge.enumerate_with_query(
+        max_results=25,
+        include_data=True,
+        labels=["EdgeLabel"],
+        expr=ExprModel(Left="field", Operator=Opertator_Enum.Equals, Right="value")
+    )
+    
+    assert isinstance(result, EnumerationResultModel)
+    assert result.success is True
+    assert result.total_records == 2
+    assert len(result.objects) == 2
+    assert result.max_results == 25
+    mock_client.request.assert_called_once()
+
+
+def test_edge_enumerate_with_query_pagination(mock_client):
+    """Test edge enumeration with pagination."""
+    mock_response = {
+        "Success": True,
+        "MaxResults": 1,
+        "IterationsRequired": 1,
+        "ContinuationToken": "next_page_token",
+        "EndOfResults": False,
+        "TotalRecords": 5,
+        "RecordsRemaining": 4,
+        "Objects": [
+            {
+                "GUID": "edge1", 
+                "Name": "Edge 1", 
+                "TenantGUID": "tenant1", 
+                "GraphGUID": "graph1",
+                "From": "node1",
+                "To": "node2"
+            }
+        ],
+        "Timestamp": {
+            "Start": "2023-01-01T00:00:00Z",
+            "End": "2023-01-01T00:00:01Z",
+            "TotalMS": 150.0,
+            "Messages": {},
+            "Metadata": None
+        }
+    }
+    mock_client.request.return_value = mock_response
+    
+    from litegraph.models.expression import ExprModel
+    from litegraph.enums.operator_enum import Opertator_Enum
+    
+    result = Edge.enumerate_with_query(
+        max_results=1,
+        expr=ExprModel(Left="field", Operator=Opertator_Enum.Equals, Right="value")
+    )
+    
+    assert isinstance(result, EnumerationResultModel)
+    assert result.success is True
+    assert result.total_records == 5
+    assert result.records_remaining == 4
+    assert result.continuation_token == "next_page_token"
+    assert result.end_of_results is False
+    assert len(result.objects) == 1
+    mock_client.request.assert_called_once()

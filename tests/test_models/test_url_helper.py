@@ -1,6 +1,6 @@
 import pytest
 from urllib.parse import urlparse, parse_qs
-from litegraph.utils.url_helper import _get_url
+from litegraph.utils.url_helper import _get_url_v1
 
 class MockResource:
     """Mock resource class for testing."""
@@ -24,22 +24,22 @@ def mock_resource_no_graph():
 
 def test_basic_url_construction(mock_resource):
     """Test basic URL construction with graph GUID."""
-    url = _get_url(mock_resource, "123")
+    url = _get_url_v1(mock_resource, "123")
     assert url == "v1.0/tenants/123/test-resource"
 
 def test_url_without_graph_guid(mock_resource_no_graph):
     """Test URL construction without graph GUID requirement."""
-    url = _get_url(mock_resource_no_graph)
+    url = _get_url_v1(mock_resource_no_graph)
     assert url == "v1.0/test-resource"
 
 def test_url_with_additional_path_segments(mock_resource):
     """Test URL construction with additional path segments."""
-    url = _get_url(mock_resource, "123", "segment1", "segment2")
+    url = _get_url_v1(mock_resource, "123", "segment1", "segment2")
     assert url == "v1.0/tenants/123/graphs/segment1/test-resource/segment2"
 
 def test_url_with_query_parameters(mock_resource):
     """Test URL construction with query parameters."""
-    url = _get_url(mock_resource, "123", filter="name eq 'test'", select="id,name")
+    url = _get_url_v1(mock_resource, "123", filter="name eq 'test'", select="id,name")
     parsed_url = urlparse(url)
     query_params = parse_qs(parsed_url.query)
 
@@ -49,35 +49,35 @@ def test_url_with_query_parameters(mock_resource):
 
 def test_url_with_flag_parameters(mock_resource):
     """Test URL construction with flag parameters (None values)."""
-    url = _get_url(mock_resource, "123", include_inactive=None, show_deleted=None)
+    url = _get_url_v1(mock_resource, "123", include_inactive=None, show_deleted=None)
     assert url.endswith("include_inactive&show_deleted")
     assert url.startswith("v1.0/tenants/123/test-resource")
 
 def test_url_with_mixed_parameters(mock_resource):
     """Test URL construction with both regular and flag parameters."""
-    url = _get_url(mock_resource, "123", filter="active eq true", include_inactive=None)
+    url = _get_url_v1(mock_resource, "123", filter="active eq true", include_inactive=None)
     assert "filter=active+eq+true" in url
     assert "include_inactive" in url
     assert url.startswith("v1.0/tenants/123/test-resource")
 
 def test_none_handling_in_args(mock_resource):
     """Test that None values in args are properly filtered."""
-    url = _get_url(mock_resource, "123", None, "segment1")
+    url = _get_url_v1(mock_resource, "123", None, "segment1")
     assert url == "v1.0/tenants/123/graphs/segment1/test-resource"
 
 def test_special_characters_in_query_params(mock_resource):
     """Test handling of special characters in query parameters."""
-    url = _get_url(mock_resource, "123", filter="name eq 'test & more'")
+    url = _get_url_v1(mock_resource, "123", filter="name eq 'test & more'")
     assert "filter=name+eq+%27test+%26+more%27" in url
 
 def test_empty_query_params(mock_resource):
     """Test URL construction with empty query parameters."""
-    url = _get_url(mock_resource, "123", **{})
+    url = _get_url_v1(mock_resource, "123", **{})
     assert url == "v1.0/tenants/123/test-resource"
 
 def test_numeric_path_segments(mock_resource):
     """Test URL construction with numeric path segments."""
-    url = _get_url(mock_resource, "123", 456, 789)
+    url = _get_url_v1(mock_resource, "123", 456, 789)
     assert url == "v1.0/tenants/123/graphs/456/test-resource/789"
 
 @pytest.mark.parametrize("query_param,expected", [
@@ -88,19 +88,19 @@ def test_numeric_path_segments(mock_resource):
 ])
 def test_different_query_param_formats(mock_resource, query_param, expected):
     """Test different query parameter formats."""
-    url = _get_url(mock_resource, "123", **query_param)
+    url = _get_url_v1(mock_resource, "123", **query_param)
     assert expected in url
 
 def test_resource_without_trailing_slash(mock_resource):
     """Test URL construction ensures proper slash handling."""
-    url = _get_url(mock_resource, "123", "endpoint")
+    url = _get_url_v1(mock_resource, "123", "endpoint")
     assert not url.endswith("//")
     assert url == "v1.0/tenants/123/graphs/endpoint/test-resource"
 
 def test_multiple_flag_parameters_order(mock_resource):
     """Test that multiple flag parameters maintain order."""
-    url1 = _get_url(mock_resource, "123", flag1=None, flag2=None)
-    url2 = _get_url(mock_resource, "123", flag2=None, flag1=None)
+    url1 = _get_url_v1(mock_resource, "123", flag1=None, flag2=None)
+    url2 = _get_url_v1(mock_resource, "123", flag2=None, flag1=None)
 
     # Get the query string parts
     query1 = url1.split('?')[1] if '?' in url1 else ''

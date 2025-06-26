@@ -13,12 +13,12 @@ class VectorSearchRequestModel(BaseModel):
     Vector search request.
     """
 
-    tenant_guid: UUID = Field(default_factory=UUID, alias="TenantGUID")
+    tenant_guid: UUID | None = Field(default=None, alias="TenantGUID")
     graph_guid: Optional[UUID] = Field(default=None, alias="GraphGUID")
-    domain: VectorSearchDomainEnum = Field(
+    domain: VectorSearchDomainEnum | None = Field(
         default=VectorSearchDomainEnum.Node, alias="Domain"
     )
-    search_type: VectorSearchTypeEnum = Field(
+    search_type: VectorSearchTypeEnum | None = Field(
         default=VectorSearchTypeEnum.CosineSimilarity, alias="SearchType"
     )
     labels: List[str] = Field(default_factory=list, alias="Labels")

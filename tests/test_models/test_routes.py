@@ -65,7 +65,7 @@ def route_request_data():
 
 
 class TestRoutesClass:
-    @patch("litegraph.utils.url_helper._get_url")
+    @patch("litegraph.utils.url_helper._get_url_v1")
     def test_routes_basic_functionality(
         self,
         mock_get_url,
@@ -88,7 +88,7 @@ class TestRoutesClass:
         assert isinstance(result.Routes[0].Edges, list)
         assert len(result.Routes[0].Edges) == 2
 
-    @patch("litegraph.utils.url_helper._get_url")
+    @patch("litegraph.utils.url_helper._get_url_v1")
     def test_routes_with_no_graph_guid(
         self, mock_get_url, routes_class, mock_response_data, mock_configuration
     ):

@@ -8,6 +8,7 @@ from litegraph.models.existence_result import ExistenceResultModel
 from litegraph.models.graphs import GraphModel
 from litegraph.resources.graphs import Graph
 from pydantic import ValidationError
+from litegraph.models.graph_statistics import GraphStatisticsModel
 
 
 @pytest.fixture
@@ -244,3 +245,62 @@ def test_batch_existence(mock_client):
         ValueError, match="Request must contain at least one existence check"
     ):
         Graph.batch_existence(graph_guid=graph_guid, request=valid_request)
+
+
+def test_graph_statistics_model_defaults():
+    stats = GraphStatisticsModel()
+    assert stats.nodes == 0
+    assert stats.edges == 0
+    assert stats.labels == 0
+    assert stats.tags == 0
+    assert stats.vectors == 0
+
+
+def test_graph_statistics_model_custom_values():
+    stats = GraphStatisticsModel(nodes=5, edges=10, labels=2, tags=3, vectors=7)
+    assert stats.nodes == 5
+    assert stats.edges == 10
+    assert stats.labels == 2
+    assert stats.tags == 3
+    assert stats.vectors == 7
+
+
+def test_graph_retrieve_statistics_single(mock_client):
+    """Test retrieving statistics for a single graph."""
+    mock_response = {
+        "Nodes": 10,
+        "Edges": 15,
+        "Labels": 3,
+        "Tags": 5,
+        "Vectors": 2
+    }
+    mock_client.request.return_value = mock_response
+    
+    result = Graph.retrieve_statistics("test-graph-guid")
+    
+    assert isinstance(result, GraphStatisticsModel)
+    assert result.nodes == 10
+    assert result.edges == 15
+    assert result.labels == 3
+    assert result.tags == 5
+    assert result.vectors == 2
+    mock_client.request.assert_called_once()
+
+
+def test_graph_retrieve_statistics_all(mock_client):
+    """Test retrieving statistics for all graphs."""
+    mock_response = {
+        "graph1": {"Nodes": 10, "Edges": 15, "Labels": 3, "Tags": 5, "Vectors": 2},
+        "graph2": {"Nodes": 5, "Edges": 8, "Labels": 1, "Tags": 2, "Vectors": 1}
+    }
+    mock_client.request.return_value = mock_response
+    
+    result = Graph.retrieve_statistics()
+    
+    assert isinstance(result, dict)
+    assert len(result) == 2
+    assert isinstance(result["graph1"], GraphStatisticsModel)
+    assert isinstance(result["graph2"], GraphStatisticsModel)
+    assert result["graph1"].nodes == 10
+    assert result["graph2"].nodes == 5
+    mock_client.request.assert_called_once()

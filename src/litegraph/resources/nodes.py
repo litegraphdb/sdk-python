@@ -3,17 +3,20 @@ from ..mixins import (
     CreateableAPIResource,
     CreateableMultipleAPIResource,
     DeletableAPIResource,
+    DeleteAllAPIResource,
+    DeleteMultipleAPIResource,
+    EnumerableAPIResource,
+    EnumerableAPIResourceWithData,
     ExistsAPIResource,
     RetrievableAPIResource,
+    RetrievableFirstMixin,
     SearchableAPIResource,
     UpdatableAPIResource,
-    DeleteMultipleAPIResource,
-    DeleteAllAPIResource
 )
-from ..configuration import get_client
+from ..models.enumeration_result import EnumerationResultModel
 from ..models.node import NodeModel
 from ..models.search_node_edge import SearchRequest, SearchResult
-from ..utils.url_helper import _get_url
+
 
 class Node(
     ExistsAPIResource,
@@ -26,6 +29,9 @@ class Node(
     SearchableAPIResource,
     DeleteMultipleAPIResource,
     DeleteAllAPIResource,
+    EnumerableAPIResource,
+    EnumerableAPIResourceWithData,
+    RetrievableFirstMixin,
 ):
     """
     Node resource class.
@@ -34,22 +40,20 @@ class Node(
     RESOURCE_NAME: str = "nodes"
     MODEL = NodeModel
     SEARCH_MODELS = SearchRequest, SearchResult
-    REQUIRE_TENANT = True
-    REQUIRE_GRAPH_GUID = True
 
     @classmethod
-    def read_first(cls, graph_guid: str, **kwargs) -> NodeModel:
+    def enumerate_with_query(cls, **kwargs) -> EnumerationResultModel:
         """
-        Read the first resource.
-
-        Args:
-            readFirstRequest: Additional keyword arguments to pass to the request.
-
-        Returns:
-            The first resource.
+        Enumerate nodes with a query.
         """
-        client = get_client()
+        return super().enumerate_with_query(_data=kwargs)
 
-        url = _get_url(cls, client.tenant_guid, graph_guid, "first")
-        response = client.request("POST", url, json=kwargs)
-        return cls.MODEL.model_validate(response)
+    @classmethod
+    def retrieve_first(
+        cls, graph_id: str | None = None, **kwargs: SearchRequest
+    ) -> NodeModel:
+        """
+        Retrieve the first node.
+        """
+        graph_id = graph_id or kwargs.get("graph_guid")
+        return super().retrieve_first(graph_id=graph_id, **kwargs)

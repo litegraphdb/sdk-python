@@ -7,18 +7,22 @@ from ..mixins import (
     AllRetrievableAPIResource,
     CreateableAPIResource,
     DeletableAPIResource,
+    EnumerableAPIResource,
+    EnumerableAPIResourceWithData,
     ExistsAPIResource,
     ExportGexfMixin,
     RetrievableAPIResource,
+    RetrievableFirstMixin,
+    RetrievableStatisticsMixin,
     SearchableAPIResource,
     UpdatableAPIResource,
 )
 from ..models.existence_request import ExistenceRequestModel
 from ..models.existence_result import ExistenceResultModel
+from ..models.graph_statistics import GraphStatisticsModel
 from ..models.graphs import GraphModel
-from ..models.read_first_request import ReadFirstRequest
 from ..models.search_graphs import SearchRequestGraph, SearchResultGraph
-from ..utils.url_helper import _get_url
+from ..utils.url_helper import _get_url_v1
 
 
 class Graph(
@@ -30,6 +34,10 @@ class Graph(
     DeletableAPIResource,
     ExportGexfMixin,
     SearchableAPIResource,
+    EnumerableAPIResource,
+    EnumerableAPIResourceWithData,
+    RetrievableStatisticsMixin,
+    RetrievableFirstMixin,
 ):
     """
     Graph resource class.
@@ -41,7 +49,7 @@ class Graph(
     SEARCH_MODELS = SearchRequestGraph, SearchResultGraph
     EXISTENCE_REQUEST_MODEL: Type[BaseModel] = ExistenceRequestModel
     EXISTENCE_RESPONSE_MODEL: Type[BaseModel] = ExistenceResultModel
-    REQUIRE_TENANT = True
+    STATS_MODEL = GraphStatisticsModel
 
     @classmethod
     def delete(cls, resource_id: str, force: bool = False) -> None:
@@ -55,9 +63,9 @@ class Graph(
             raise ValueError("Graph GUID is required for this resource.")
 
         url = (
-            _get_url(cls, graph_id, resource_id, force=None)
+            _get_url_v1(cls, graph_id, resource_id, force=None)
             if force
-            else _get_url(cls, graph_id, resource_id)
+            else _get_url_v1(cls, graph_id, resource_id)
         )
         client.request("DELETE", url)
 
@@ -82,7 +90,7 @@ class Graph(
         client = get_client()
 
         # Construct URL
-        url = _get_url(cls, graph_guid, "existence")
+        url = _get_url_v1(cls, graph_guid, "existence")
 
         # Prepare request data
         data = request.model_dump(mode="json", by_alias=True)
@@ -103,18 +111,27 @@ class Graph(
         return super().export_gexf(graph_id, **params)
 
     @classmethod
-    def read_first(cls, **kwargs) -> GraphModel:
+    def retrieve_statistics(
+        cls, graph_guid: str | None = None
+    ) -> GraphStatisticsModel | dict[str, GraphStatisticsModel]:
         """
-        Read the first resource.
-
-        Args:
-            readFirstRequest: Additional keyword arguments to pass to the request.
-
-        Returns:
-            The first resource.
+        Retrieves statistics for a given resource.
         """
-        client = get_client()
+        if graph_guid:
+            response = super().retrieve_statistics(graph_guid)
+            return GraphStatisticsModel.model_validate(response)
+        else:
+            response = super().retrieve_statistics()
+            return {
+                k: GraphStatisticsModel.model_validate(v) for k, v in response.items()
+            }
 
-        url = _get_url(cls, client.tenant_guid, "first")
-        response = client.request("POST", url, json=kwargs)
-        return cls.MODEL.model_validate(response)
+    @classmethod
+    def retrieve_first(
+        cls, graph_id: str | None = None, **kwargs: SearchRequestGraph
+    ) -> GraphModel:
+        """
+        Retrieve the first graph.
+        """
+        graph_id = graph_id or kwargs.get("graph_guid")
+        return super().retrieve_first(graph_id=graph_id, **kwargs)

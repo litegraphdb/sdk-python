@@ -1,7 +1,7 @@
 from ..configuration import get_client
 from ..models.edge import EdgeModel
 from ..models.route_request import RouteRequestModel
-from ..utils.url_helper import _get_url
+from ..utils.url_helper import _get_url_v1
 
 
 class RouteEdges:
@@ -26,9 +26,9 @@ class RouteEdges:
         graph_id = client.graph_guid if cls.REQUIRE_GRAPH_GUID else None
 
         url = (
-            _get_url(cls, graph_guid, "between", **query_params)
+            _get_url_v1(cls, graph_guid, "between", **query_params)
             if graph_id
-            else _get_url(cls, graph_guid)
+            else _get_url_v1(cls, graph_guid)
         )
 
         instance = client.request("GET", url)

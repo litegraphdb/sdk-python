@@ -46,7 +46,7 @@ def _get_url_base(cls, *args, **query_params) -> str:
     return f"{path}?{query_string}" if query_string else path
 
 
-def _get_url(cls, *args, **query_params) -> str:
+def _get_url_v1(cls, *args, **query_params) -> str:
     """
     Get the v1.0 URL for a resource.
 
@@ -58,3 +58,10 @@ def _get_url(cls, *args, **query_params) -> str:
         str: The constructed v1.0 URL for the resource.
     """
     return f"v1.0/{_get_url_base(cls, *args, **query_params)}"
+
+
+def _get_url_v2(cls, *args, **query_params) -> str:
+    """
+    Get the v2.0 URL for a resource.
+    """
+    return f"v2.0/{_get_url_base(cls, *args, **query_params)}"

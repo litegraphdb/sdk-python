@@ -5,6 +5,7 @@ class ApiError_Enum(str, Enum):
     """
     API error codes
     """
+
     authentication_failed = "AuthenticationFailed"
     authorization_failed = "AuthorizationFailed"
     bad_request = "BadRequest"
