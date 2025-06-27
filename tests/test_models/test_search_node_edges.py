@@ -45,7 +45,7 @@ def sample_edge():
 @pytest.fixture
 def sample_expression():
     """Create a sample ExprModel for testing"""
-    return ExprModel(Left="name", Operator=Opertator_Enum.Equal, Right="Test Node")
+    return ExprModel(Left="name", Operator=Opertator_Enum.Equals, Right="Test Node")
 
 
 class TestSearchRequest:

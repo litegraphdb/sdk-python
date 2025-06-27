@@ -1,28 +1,35 @@
 from uuid import UUID
 
+from ..configuration import get_client
 from ..enums.vector_search_domain_enum import VectorSearchDomainEnum
 from ..mixins import (
     AllRetrievableAPIResource,
     CreateableAPIResource,
+    CreateableMultipleAPIResource,
     DeletableAPIResource,
+    EnumerableAPIResource,
+    EnumerableAPIResourceWithData,
     ExistsAPIResource,
     RetrievableAPIResource,
-    SearchableAPIResource,
     UpdatableAPIResource,
 )
+from ..models.enumeration_result import EnumerationResultModel
 from ..models.vector_metadata import VectorMetadataModel
 from ..models.vector_search_request import VectorSearchRequestModel
 from ..models.vector_search_response import VectorSearchResultModel
+from ..utils.url_helper import _get_url_v1
 
 
 class Vector(
     ExistsAPIResource,
     CreateableAPIResource,
+    CreateableMultipleAPIResource,
     RetrievableAPIResource,
     AllRetrievableAPIResource,
     UpdatableAPIResource,
     DeletableAPIResource,
-    SearchableAPIResource,
+    EnumerableAPIResource,
+    EnumerableAPIResourceWithData,
 ):
     """Vectors resource."""
 
@@ -70,7 +77,7 @@ class Vector(
                 "Graph GUID must be supplied when performing a node/edge vector search."
             )
 
-        search_request = VectorSearchRequestModel(
+        search_request = cls.SEARCH_MODELS[0](
             Domain=domain,
             Embeddings=embeddings,
             TenantGUID=tenant_guid,
@@ -80,4 +87,25 @@ class Vector(
             Expr=filter_expr,
         )
 
-        return cls.search(**search_request.model_dump(by_alias=True, mode="json"))
+        client = get_client()
+
+        # Construct URL
+        url = _get_url_v1(cls, graph_guid)
+
+        # Prepare request data
+        data = search_request.model_dump(mode="json", by_alias=True)
+
+        # Make the request
+        headers = {"Content-Type": "application/json"}
+        responses = client.request(method="POST", url=url, json=data, headers=headers)
+
+        # Parse and validate response
+
+        return [cls.SEARCH_MODELS[1].model_validate(response) for response in responses]
+
+    @classmethod
+    def enumerate_with_query(cls, **kwargs) -> EnumerationResultModel:
+        """
+        Enumerate vectors with a query.
+        """
+        return super().enumerate_with_query(_data=kwargs)

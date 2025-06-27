@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
-from pydantic import BaseModel, Field, ConfigDict
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class UserMasterModel(BaseModel):
@@ -12,7 +13,11 @@ class UserMasterModel(BaseModel):
     email: str = Field(default="", alias="Email")
     password: str = Field(default="", alias="Password")
     active: bool = Field(default=True, alias="Active")
-    created_utc: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), alias="CreatedUtc")
-    last_update_utc: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), alias="LastUpdateUtc")
+    created_utc: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc), alias="CreatedUtc"
+    )
+    last_update_utc: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc), alias="LastUpdateUtc"
+    )
 
     model_config = ConfigDict(populate_by_name=True)

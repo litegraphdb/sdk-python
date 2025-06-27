@@ -2,7 +2,7 @@ from ..configuration import get_client
 from ..models.edge import EdgeModel
 from ..models.node import NodeModel
 from ..models.route_request import RouteRequestModel
-from ..utils.url_helper import _get_url
+from ..utils.url_helper import _get_url_v1
 
 
 class RouteNodes:
@@ -26,9 +26,9 @@ class RouteNodes:
         graph_id = client.graph_guid if cls.REQUIRE_GRAPH_GUID else None
 
         url = (
-            _get_url(cls, graph_id, node_guid, "/edges/from")
+            _get_url_v1(cls, graph_id, node_guid, "/edges/from")
             if graph_id
-            else _get_url(cls, graph_guid)
+            else _get_url_v1(cls, graph_guid)
         )
 
         instance = client.request("GET", url)
@@ -47,9 +47,9 @@ class RouteNodes:
         graph_id = client.graph_guid if cls.REQUIRE_GRAPH_GUID else None
 
         url = (
-            _get_url(cls, graph_id, node_guid, "/edges/to")
+            _get_url_v1(cls, graph_id, node_guid, "/edges/to")
             if graph_id
-            else _get_url(cls, graph_guid)
+            else _get_url_v1(cls, graph_guid)
         )
         instance = client.request("GET", url)
         return (
@@ -66,9 +66,9 @@ class RouteNodes:
         client = get_client()
         graph_id = client.graph_guid if cls.REQUIRE_GRAPH_GUID else None
         url = (
-            _get_url(cls, graph_id, node_guid, "/edges")
+            _get_url_v1(cls, graph_id, node_guid, "/edges")
             if graph_id
-            else _get_url(cls, graph_guid)
+            else _get_url_v1(cls, graph_guid)
         )
 
         instance = client.request("GET", url)
@@ -86,9 +86,9 @@ class RouteNodes:
         client = get_client()
         graph_id = client.graph_guid if cls.REQUIRE_GRAPH_GUID else None
         url = (
-            _get_url(cls, graph_id, node_guid, "/parents")
+            _get_url_v1(cls, graph_id, node_guid, "/parents")
             if graph_id
-            else _get_url(cls, graph_guid)
+            else _get_url_v1(cls, graph_guid)
         )
         instance = client.request("GET", url)
         return (
@@ -105,9 +105,9 @@ class RouteNodes:
         client = get_client()
         graph_id = client.graph_guid if cls.REQUIRE_GRAPH_GUID else None
         url = (
-            _get_url(cls, graph_id, node_guid, "/children")
+            _get_url_v1(cls, graph_id, node_guid, "/children")
             if graph_id
-            else _get_url(cls, graph_guid)
+            else _get_url_v1(cls, graph_guid)
         )
 
         instance = client.request("GET", url)
@@ -125,9 +125,9 @@ class RouteNodes:
         client = get_client()
         graph_id = client.graph_guid if cls.REQUIRE_GRAPH_GUID else None
         url = (
-            _get_url(cls, graph_id, node_guid, "/neighbors")
+            _get_url_v1(cls, graph_id, node_guid, "/neighbors")
             if graph_id
-            else _get_url(cls, graph_guid)
+            else _get_url_v1(cls, graph_guid)
         )
         instance = client.request("GET", url)
         return (
@@ -144,9 +144,9 @@ class RouteNodes:
         client = get_client()
         graph_id = client.graph_guid if cls.REQUIRE_GRAPH_GUID else None
         url = (
-            _get_url(cls, graph_id, node_guid, "/between")
+            _get_url_v1(cls, graph_id, node_guid, "/between")
             if graph_id
-            else _get_url(cls, graph_guid)
+            else _get_url_v1(cls, graph_guid)
         )
         instance = client.request("GET", url)
         return (

@@ -32,12 +32,6 @@ LiteGraph is a lightweight graph database with both relational and vector suppor
 pip install litegraph
 ```
 
-or you can install the latest version from the repository
-
-```bash
-pip install git+https://github.com/view-io/sdk-python.git
-```
-
 ## Quick Start
 
 ```python
@@ -57,8 +51,8 @@ graph = Graph.create(
     data={"description": "A sample graph"}
 )
 
-# Create Multiple Nodes
-new_multiple_node = [
+# Create Bulk Nodes
+new_bulk_node = [
     {
         "Name": "Active Directory",
         "Data": {
@@ -72,7 +66,7 @@ new_multiple_node = [
         }
     }
 ]
-multiple_nodes = Node.create_multiple(new_multiple_node)
+bulk_nodes = Node.create_multiple(new_bulk_node)
 
 # Add nodes
 node1 = Node.create(
@@ -98,6 +92,72 @@ edge = Edge.create(
 )
 ```
 
+## Authentication
+
+LiteGraph SDK supports multiple authentication methods:
+
+### 1. Access Key Authentication
+
+The simplest way to authenticate is using an access key:
+
+```python
+from litegraph import configure
+
+configure(
+    endpoint="https://api.litegraph.com",
+    tenant_guid="your-tenant-guid",
+    access_key="your-access-key"
+)
+```
+
+### 2. User Authentication
+
+For user-based authentication, you can generate authentication tokens:
+
+```python
+from litegraph import Authentication
+
+# Get list of tenants for a user
+tenants = Authentication.retrieve_tenants_for_email(email="user@example.com")
+
+# Generate authentication token
+token = Authentication.generate_authentication_token(
+    email="user@example.com",
+    password="your-password",
+    tenant_guid="your-tenant-guid"
+)
+
+# Retrieve token details
+token_details = Authentication.retrieve_token_details(token=token.token)
+```
+
+### 3. Credential Management
+
+For long-term access, you can create and manage credentials:
+
+```python
+from litegraph import Credential
+
+# Create a new credential
+credential = Credential.create(
+    user_guid="user-guid",
+    name="API Access",
+    bearer_token="your-bearer-token"
+)
+
+# Retrieve credential details
+credential = Credential.retrieve(guid="credential-guid")
+
+# Update credential
+credential = Credential.update(
+    guid="credential-guid",
+    name="Updated API Access",
+    bearer_token="new-bearer-token"
+)
+```
+
+The SDK will automatically handle authentication headers and token management. If authentication fails, an `AuthenticationError` will be raised with appropriate error messages.
+
 ## API Endpoints Reference
 
 ### Tenant Operations
@@ -110,6 +170,17 @@ edge = Edge.create(
 | Tenant.update | Update tenant details | guid: str<br>name: str = None<br>active: bool = None | TenantMetadataModel | `v1.0/tenants/{guid}` |
 | Tenant.delete | Delete a tenant | guid: str<br>force: bool = False | None | `v1.0/tenants/{guid}` |
 | Tenant.retrieve_all | List all tenants | None | List[TenantMetadataModel] | `v1.0/tenants` |
+| Tenant.enumerate | Enumerate tenants | None | EnumerationResultModel | `v2.0/tenants` |
+| Tenant.enumerate_with_query | Enumerate tenants with query | See below | EnumerationResultModel | `v2.0/tenants` (POST) |
+| Tenant.retrieve_statistics | Retrieve tenant statistics | tenant_guid: str (optional) | TenantStatisticsModel or dict | `tenants/{tenant_guid}/stats` or `tenants/stats` |
+
+### Authentication Operations
+
+| Method | Description | Parameters | Returns | Endpoint |
+|--------|-------------|------------|---------|----------|
+| Authentication.retrieve_tenants_for_email | Get tenants for email | email: str | List[TenantMetadataModel] | `v1.0/token/tenants` |
+| Authentication.generate_authentication_token | Generate auth token | email: str<br>password: str<br>tenant_guid: str | AuthenticationTokenModel | `v1.0/token` |
+| Authentication.retrieve_token_details | Get token details | token: str | AuthenticationTokenModel | `v1.0/token/details` |
 
 ### User Operations
 
@@ -132,6 +203,8 @@ edge = Edge.create(
 | Credential.update | Update credential details | guid: str<br>name: str = None<br>bearer_token: str = None<br>active: bool = None | CredentialModel | `v1.0/tenants/{tenant_guid}/credentials/{guid}` |
 | Credential.delete | Delete credential | guid: str | None | `v1.0/tenants/{tenant_guid}/credentials/{guid}` |
 | Credential.retrieve_all | List all credentials | None | List[CredentialModel] | `v1.0/tenants/{tenant_guid}/credentials` |
+| Credential.enumerate | Enumerate credentials | None | EnumerationResultModel | `v2.0/credentials` |
+| Credential.enumerate_with_query | Enumerate credentials with query | See below | EnumerationResultModel | `v2.0/credentials` (POST) |
 
 ### Label Operations
 
@@ -143,6 +216,9 @@ edge = Edge.create(
 | Label.update | Update label details | guid: str<br>label: str = None<br>graph_guid: str = None<br>node_guid: str = None<br>edge_guid: str = None | LabelModel | `v1.0/tenants/{tenant_guid}/labels/{guid}` |
 | Label.delete | Delete label | guid: str | None | `v1.0/tenants/{tenant_guid}/labels/{guid}` |
 | Label.retrieve_all | List all labels | None | List[LabelModel] | `v1.0/tenants/{tenant_guid}/labels` |
+| Label.enumerate | Enumerate labels | None | EnumerationResultModel | `v2.0/labels` |
+| Label.enumerate_with_query | Enumerate labels with query | See below | EnumerationResultModel | `v2.0/labels` (POST) |
+| Label.create_multiple | Create bulk labels | labels: List[dict] | List[LabelModel] | `v1.0/tenants/{tenant_guid}/labels/bulk` |
 
 ### Tag Operations
 
@@ -154,6 +230,9 @@ edge = Edge.create(
 | Tag.update | Update tag details | guid: str<br>key: str = None<br>value: str = None<br>graph_guid: str = None<br>node_guid: str = None<br>edge_guid: str = None | TagModel | `v1.0/tenants/{tenant_guid}/tags/{guid}` |
 | Tag.delete | Delete tag | guid: str | None | `v1.0/tenants/{tenant_guid}/tags/{guid}` |
 | Tag.retrieve_all | List all tags | None | List[TagModel] | `v1.0/tenants/{tenant_guid}/tags` |
+| Tag.enumerate | Enumerate tags | None | EnumerationResultModel | `v2.0/tags` |
+| Tag.enumerate_with_query | Enumerate tags with query | See below | EnumerationResultModel | `v2.0/tags` (POST) |
+| Tag.create_multiple | Create bulk tags | tags: List[dict] | List[TagModel] | `v1.0/tenants/{tenant_guid}/tags/bulk` |
 
 ### Vector Operations
 
@@ -165,7 +244,9 @@ edge = Edge.create(
 | Vector.update | Update vector details | guid: str<br>vector: List[float] = None<br>labels: List[str] = None<br>tags: Dict[str, str] = None | VectorMetadataModel | `v1.0/tenants/{tenant_guid}/vectors/{guid}` |
 | Vector.delete | Delete vector | guid: str | None | `v1.0/tenants/{tenant_guid}/vectors/{guid}` |
 | Vector.retrieve_all | List all vectors | None | List[VectorMetadataModel] | `v1.0/tenants/{tenant_guid}/vectors` |
-| Vector.search_vectors | Search vectors | domain: VectorSearchDomainEnum<br>embeddings: list[float]<br>tenant_guid: UUID<br>graph_guid: UUID = None<br>labels: list[str] = None<br>tags: dict = None<br>filter_expr: dict = None | VectorSearchResultModel | `v1.0/tenants/{tenant_guid}/vectors/search` |
+| Vector.enumerate | Enumerate vectors | None | EnumerationResultModel | `v2.0/vectors` |
+| Vector.enumerate_with_query | Enumerate vectors with query | See below | EnumerationResultModel | `v2.0/vectors` (POST) |
+| Vector.search_vectors | Search vectors | domain: VectorSearchDomainEnum<br>embeddings: list[float]<br>tenant_guid: UUID<br>graph_guid: UUID = None<br>labels: list[str] = None<br>tags: dict = None<br>filter_expr: dict = None<br>search_type: VectorSearchTypeEnum = VectorSearchTypeEnum.CosineSimilarity | VectorSearchResultModel | `v1.0/tenants/{tenant_guid}/vectors/search` |
 
 ### Graph Operations
 
@@ -180,6 +261,9 @@ edge = Edge.create(
 | Graph.search | Search graphs | expr: ExprModel<br>ordering: str = None | List[GraphModel] | `v1.0/tenants/{tenant_guid}/graphs/search` |
 | Graph.export_gexf | Export graph to GEXF | graph_id: str<br>include_data: bool = False | str | `v1.0/tenants/{tenant_guid}/graphs/{guid}/export` |
 | Graph.batch_existence | Batch existence check | graph_guid: str<br>request: ExistenceRequestModel | ExistenceResultModel | `v1.0/tenants/{tenant_guid}/graphs/{guid}/existence` |
+| Graph.enumerate | Enumerate graphs | None | EnumerationResultModel | `v2.0/graphs` |
+| Graph.enumerate_with_query | Enumerate graphs with query | See below | EnumerationResultModel | `v2.0/graphs` (POST) |
+| Graph.retrieve_statistics | Retrieve graph statistics | graph_guid: str (optional) | GraphStatisticsModel or dict | `graphs/{graph_guid}/stats` or `graphs/stats` |
 
 ### Node Operations
 
@@ -187,14 +271,16 @@ edge = Edge.create(
 |--------|-------------|------------|---------|----------|
 | Node.exists | Check if a node exists | graph_guid: str<br>guid: str | bool | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/nodes/{guid}` |
 | Node.create | Create a new node | graph_guid: str<br>name: str = None<br>data: Dict = None<br>labels: List = None<br>tags: Dict = None<br>vectors: List = None | NodeModel | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/nodes` |
-| Node.create_multiple | Create multiple nodes | graph_guid: str<br>nodes: List[dict] | List[NodeModel] | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/nodes/multiple` |
+| Node.create_multiple | Create bulk nodes | graph_guid: str<br>nodes: List[dict] | List[NodeModel] | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/nodes/bulk` |
 | Node.retrieve | Retrieve node details | graph_guid: str<br>guid: str | NodeModel | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/nodes/{guid}` |
 | Node.update | Update node details | graph_guid: str<br>guid: str<br>name: str = None<br>data: Dict = None<br>labels: List = None<br>tags: Dict = None<br>vectors: List = None | NodeModel | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/nodes/{guid}` |
 | Node.delete | Delete node | graph_guid: str<br>guid: str | None | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/nodes/{guid}` |
-| Node.delete_multiple | Delete multiple nodes | graph_guid: str<br>node_guids: List[str] | None | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/nodes/multiple` |
+| Node.delete_multiple | Delete bulk nodes | graph_guid: str<br>node_guids: List[str] | None | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/nodes/bulk` |
 | Node.delete_all | Delete all nodes | graph_guid: str | None | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/nodes/all` |
 | Node.retrieve_all | List all nodes | graph_guid: str | List[NodeModel] | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/nodes` |
 | Node.search | Search nodes | graph_guid: str<br>expr: ExprModel<br>ordering: str = None | List[NodeModel] | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/nodes/search` |
+| Node.enumerate | Enumerate nodes | None | EnumerationResultModel | `v2.0/nodes` |
+| Node.enumerate_with_query | Enumerate nodes with query | See below | EnumerationResultModel | `v2.0/nodes` (POST) |
 
 ### Edge Operations
 
@@ -202,14 +288,16 @@ edge = Edge.create(
 |--------|-------------|------------|---------|----------|
 | Edge.exists | Check if an edge exists | graph_guid: str<br>guid: str | bool | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/edges/{guid}` |
 | Edge.create | Create a new edge | graph_guid: str<br>from_guid: str<br>to_guid: str<br>name: str = None<br>cost: int = 0<br>data: Dict = None<br>labels: List = None<br>tags: Dict = None | EdgeModel | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/edges` |
-| Edge.create_multiple | Create multiple edges | graph_guid: str<br>edges: List[dict] | List[EdgeModel] | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/edges/multiple` |
+| Edge.create_multiple | Create bulk edges | graph_guid: str<br>edges: List[dict] | List[EdgeModel] | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/edges/bulk` |
 | Edge.retrieve | Retrieve edge details | graph_guid: str<br>guid: str | EdgeModel | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/edges/{guid}` |
 | Edge.update | Update edge details | graph_guid: str<br>guid: str<br>name: str = None<br>cost: int = None<br>data: Dict = None<br>labels: List = None<br>tags: Dict = None | EdgeModel | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/edges/{guid}` |
 | Edge.delete | Delete edge | graph_guid: str<br>guid: str | None | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/edges/{guid}` |
-| Edge.delete_multiple | Delete multiple edges | graph_guid: str<br>edge_guids: List[str] | None | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/edges/multiple` |
+| Edge.delete_multiple | Delete bulk edges | graph_guid: str<br>edge_guids: List[str] | None | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/edges/bulk` |
 | Edge.delete_all | Delete all edges | graph_guid: str | None | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/edges/all` |
 | Edge.retrieve_all | List all edges | graph_guid: str | List[EdgeModel] | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/edges` |
 | Edge.search | Search edges | graph_guid: str<br>expr: ExprModel<br>ordering: str = None | List[EdgeModel] | `v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/edges/search` |
+| Edge.enumerate | Enumerate edges | None | EnumerationResultModel | `v2.0/edges` |
+| Edge.enumerate_with_query | Enumerate edges with query | See below | EnumerationResultModel | `v2.0/edges` (POST) |
 
 ### Route Operations
 
@@ -229,7 +317,7 @@ edge = Edge.create(
 
 ### Base Models
 
-- `TenantModel`: Represents a tenant in the system
+- `TenantMetadataModel`: Represents a tenant
 - `GraphModel`: Represents a graph container
 - `NodeModel`: Represents a node in a graph
 - `EdgeModel`: Represents a connection between nodes
@@ -362,8 +450,8 @@ configure(
     access_key="your-access-key"
 )
 
-# Create Multiple Nodes
-new_multiple_nodes = [
+# Create Bulk Nodes
+new_bulk_nodes = [
     {
         "Name": "Active Directory",
         "Data": {
@@ -377,7 +465,7 @@ new_multiple_nodes = [
         }
     }
 ]
-nodes = Node.create_multiple(graph_guid="graph-guid", nodes=new_multiple_nodes)
+nodes = Node.create_multiple(graph_guid="graph-guid", nodes=new_bulk_nodes)
 
 # Create a single node
 node = Node.create(
@@ -402,7 +490,7 @@ node = Node.update(
 # Delete a node
 Node.delete(graph_guid="graph-guid", node_guid="node-guid")
 
-# Delete multiple nodes
+# Delete bulk nodes
 Node.delete_multiple(graph_guid="graph-guid", node_guids=["node-guid-1", "node-guid-2"])
 
 # Delete all nodes in a graph
@@ -413,6 +501,7 @@ exists = Node.exists(graph_guid="graph-guid", node_guid="node-guid")
 
 # Search nodes in a graph
 search_request = {
+    "graph_guid": "graph-guid",
     "Ordering": "CreatedDescending",
     "Expr": {
         "Left": "Name",
@@ -436,8 +525,8 @@ configure(
     access_key="your-access-key"
 )
 
-# Create Multiple Edges
-new_multiple_edges = [
+# Create Bulk Edges
+new_bulk_edges = [
     {
         "Name": "Connection 1",
         "From": "node-guid-1",
@@ -451,7 +540,7 @@ new_multiple_edges = [
         "Cost": 1
     }
 ]
-edges = Edge.create_multiple(graph_guid="graph-guid", edges=new_multiple_edges)
+edges = Edge.create_multiple(graph_guid="graph-guid", edges=new_bulk_edges)
 
 # Create a single edge
 edge = Edge.create(
@@ -479,7 +568,7 @@ edge = Edge.update(
 # Delete an edge
 Edge.delete(graph_guid="graph-guid", edge_guid="edge-guid")
 
-# Delete multiple edges
+# Delete bulk edges
 Edge.delete_multiple(graph_guid="graph-guid", edge_guids=["edge-guid-1", "edge-guid-2"])
 
 # Delete all edges in a graph
@@ -547,7 +636,8 @@ search_results = Vector.search_vectors(
     graph_guid="graph-guid",  # Required for Node/Edge searches
     labels=["label1", "label2"],  # Optional
     tags={"key": "value"},  # Optional
-    filter_expr={"Left": "field", "Operator": "Equals", "Right": "value"}  # Optional
+    filter_expr={"Left": "field", "Operator": "Equals", "Right": "value"},  # Optional
+    search_type=VectorSearchTypeEnum.CosineSimilarity
 )
 ```
 
@@ -720,3 +810,83 @@ Have feedback or found an issue? Please file an issue in our GitHub repository.
 ## Version History
 
 Please refer to [CHANGELOG.md](CHANGELOG.md) for a detailed version history.
+
+## Enumeration and Statistics
+
+### Enumeration
+
+The SDK provides two ways to enumerate resources:
+
+- `enumerate()`: Returns a paginated list of resources (GET `v2.0/resource_name`).
+- `enumerate_with_query(**kwargs)`: Returns a filtered, paginated list of resources using advanced query options (POST `v2.0/resource_name`).
+
+#### Example: Enumerate Tenants
+
+```python
+from litegraph import Tenant
+
+# Simple enumeration (all tenants)
+tenants = Tenant.enumerate()
+
+# Enumeration with query
+from litegraph.models.expression import ExprModel
+from litegraph.enums.enumeration_order_enum import EnumerationOrder_Enum
+
+query = {
+    "ordering": EnumerationOrder_Enum.CreatedDescending,
+    "max_results": 10,
+    "expr": ExprModel(Left="Name", Operator="Equals", Right="Test")
+}
+tenants = Tenant.enumerate_with_query(**query)
+```
+
+#### EnumerationQueryModel fields
+- `ordering`: Sort order (see `EnumerationOrder_Enum`)
+- `include_data`: Include full data in results (bool)
+- `include_subordinates`: Include subordinates (bool)
+- `max_results`: Max results per page (int)
+- `continuation_token`: For pagination (str)
+- `labels`: Filter by labels (list)
+- `tags`: Filter by tags (dict)
+- `expr`: Filter expression (see `ExprModel`)
+
+#### EnumerationResultModel fields
+- `success`: Operation success (bool)
+- `timestamp`: Timestamp of operation
+- `max_results`: Max results per page
+- `iterations_required`: Iterations required
+- `continuation_token`: For pagination
+- `end_of_results`: End of results (bool)
+- `total_records`: Total records
+- `records_remaining`: Records remaining
+- `objects`: List of results
+
+### Statistics
+
+The SDK provides a `retrieve_statistics()` method for supported resources (e.g., Tenant, Graph):
+
+- `retrieve_statistics(resource_guid=None)`: Returns statistics for a specific resource if a GUID is provided, or for all resources if no GUID is provided.
+
+#### Endpoint Patterns
+- For a specific resource: `resource_name/{resource_guid}/stats`
+- For all resources: `resource_name/stats`
+
+#### Example: Retrieve Statistics
+
+```python
+from litegraph import Tenant, Graph
+
+# Tenant statistics (single and all)
+stats = Tenant.retrieve_statistics(tenant_guid="your-tenant-guid")  # /tenants/{tenant_guid}/stats
+stats_all = Tenant.retrieve_statistics()  # /tenants/stats
+
+# Graph statistics (single and all)
+graph_stats = Graph.retrieve_statistics(graph_guid="your-graph-guid")  # /graphs/{graph_guid}/stats
+graph_stats_all = Graph.retrieve_statistics()  # /graphs/stats
+```
+
+#### TenantStatisticsModel fields
+- `graphs`, `nodes`, `edges`, `labels`, `tags`, `vectors`
+
+#### GraphStatisticsModel fields
+- `nodes`, `edges`, `labels`, `tags`, `vectors`

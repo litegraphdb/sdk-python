@@ -1,7 +1,7 @@
 from ..configuration import get_client
 from ..models.route_request import RouteRequestModel
 from ..models.route_response import RouteResultModel
-from ..utils.url_helper import _get_url
+from ..utils.url_helper import _get_url_v1
 
 
 class Routes:
@@ -24,6 +24,6 @@ class Routes:
         client = get_client()
         graph_id = client.graph_guid if cls.REQUIRE_GRAPH_GUID else None
 
-        url = _get_url(cls, graph_id) if graph_id else _get_url(cls, graph_guid)
+        url = _get_url_v1(cls, graph_id) if graph_id else _get_url_v1(cls, graph_guid)
         instance = client.request("POST", url, data=kwargs, headers=headers)
         return cls.RESPONSE_MODEL.model_validate(instance) if cls.MODEL else instance

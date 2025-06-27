@@ -4,6 +4,8 @@ from uuid import uuid4
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from ..models.vector_metadata import VectorMetadataModel
+
 
 class GraphModel(BaseModel):
     """
@@ -21,6 +23,8 @@ class GraphModel(BaseModel):
     )
     labels: Optional[List] = Field(default_factory=list, alias="Labels")
     tags: Optional[Dict[str, str]] = Field(default_factory=dict, alias="Tags")
-    vectors: Optional[List] = Field(default_factory=list, alias="Vectors")
+    vectors: Optional[List[VectorMetadataModel]] = Field(
+        default_factory=list, alias="Vectors"
+    )
     data: Optional[Dict] = Field(default=None, alias="Data")
     model_config = ConfigDict(populate_by_name=True)

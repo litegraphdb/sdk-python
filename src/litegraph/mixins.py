@@ -7,8 +7,10 @@ from pydantic import BaseModel
 from .configuration import get_client
 from .enums.severity_enum import Severity_Enum
 from .exceptions import GRAPH_REQUIRED_ERROR, TENANT_REQUIRED_ERROR, SdkException
+from .models.enumeration_query import EnumerationQueryModel
+from .models.enumeration_result import EnumerationResultModel
 from .sdk_logging import log_error
-from .utils.url_helper import _get_url
+from .utils.url_helper import _get_url_v1, _get_url_v2
 
 JSON_CONTENT_TYPE = {"Content-Type": "application/json"}
 
@@ -31,9 +33,9 @@ class ExistsAPIResource:
         graph_id = client.graph_guid
         tenant = client.tenant_guid if cls.REQUIRE_TENANT else None
         url = (
-            _get_url(cls, tenant, graph_id, guid)
+            _get_url_v1(cls, tenant, graph_id, guid)
             if graph_id and cls.REQUIRE_GRAPH_GUID
-            else _get_url(cls, tenant, guid)
+            else _get_url_v1(cls, tenant, guid)
         )
 
         try:
@@ -87,9 +89,9 @@ class CreateableAPIResource:
         # Build URL based on requirements
         tenant = client.tenant_guid if cls.REQUIRE_TENANT else None
         url = (
-            _get_url(cls, tenant, graph_id)
+            _get_url_v1(cls, tenant, graph_id)
             if graph_id and cls.REQUIRE_GRAPH_GUID
-            else _get_url(cls, tenant)
+            else _get_url_v1(cls, tenant)
         )
         if cls.MODEL is not None:
             data = cls.MODEL(**_data).model_dump(
@@ -113,14 +115,14 @@ class CreateableMultipleAPIResource:
     REQUIRE_TENANT: bool = True
 
     @classmethod
-    def create_multiple(cls, guid: List[dict]) -> List[BaseModel]:
+    def create_multiple(cls, data: List[dict]) -> List[BaseModel]:
         """
         Creates multiple nodes or edges in a single request.
         """
-        if guid is None:
+        if data is None:
             raise TypeError("Nodes parameter cannot be None")
 
-        if not guid:
+        if not data:
             return []
 
         client = get_client()
@@ -132,17 +134,17 @@ class CreateableMultipleAPIResource:
         if cls.MODEL is not None:
             validated_nodes = [
                 cls.MODEL(**node).model_dump(mode="json", by_alias=True)
-                for node in guid
+                for node in data
             ]
         else:
-            validated_nodes = guid
+            validated_nodes = data
 
         # Construct URL for multiple creation
         tenant = client.tenant_guid if cls.REQUIRE_TENANT else None
         url = (
-            _get_url(cls, tenant, graph_id, "multiple")
+            _get_url_v1(cls, tenant, graph_id, "bulk")
             if graph_id and cls.REQUIRE_GRAPH_GUID
-            else _get_url(cls, tenant, "multiple")
+            else _get_url_v1(cls, tenant, "bulk")
         )
 
         # Make the request
@@ -179,9 +181,9 @@ class RetrievableAPIResource:
             raise ValueError(GRAPH_REQUIRED_ERROR)
         tenant = client.tenant_guid if cls.REQUIRE_TENANT else None
         url = (
-            _get_url(cls, tenant, graph_id, guid)
+            _get_url_v1(cls, tenant, graph_id, guid)
             if graph_id and cls.REQUIRE_GRAPH_GUID
-            else _get_url(cls, tenant, guid)
+            else _get_url_v1(cls, tenant, guid)
         )
         instance = client.request("GET", url)
 
@@ -212,9 +214,9 @@ class UpdatableAPIResource:
             raise ValueError(GRAPH_REQUIRED_ERROR)
         tenant = client.tenant_guid if cls.REQUIRE_TENANT else None
         url = (
-            _get_url(cls, tenant, graph_id, guid)
+            _get_url_v1(cls, tenant, graph_id, guid)
             if graph_id and cls.REQUIRE_GRAPH_GUID
-            else _get_url(cls, tenant, guid)
+            else _get_url_v1(cls, tenant, guid)
         )
 
         if cls.MODEL is not None:
@@ -249,9 +251,9 @@ class DeletableAPIResource:
             raise ValueError(GRAPH_REQUIRED_ERROR)
         tenant = client.tenant_guid if cls.REQUIRE_TENANT else None
         url = (
-            _get_url(cls, tenant, graph_id, guid, **kwargs)
+            _get_url_v1(cls, tenant, graph_id, guid, **kwargs)
             if graph_id and cls.REQUIRE_GRAPH_GUID
-            else _get_url(cls, tenant, guid, **kwargs)
+            else _get_url_v1(cls, tenant, guid, **kwargs)
         )
 
         client.request("DELETE", url)
@@ -288,9 +290,9 @@ class DeleteMultipleAPIResource:
 
         tenant = client.tenant_guid if cls.REQUIRE_TENANT else None
         url = (
-            _get_url(cls, tenant, graph_id, "multiple")
+            _get_url_v1(cls, tenant, graph_id, "bulk")
             if graph_id and cls.REQUIRE_GRAPH_GUID
-            else _get_url(cls, tenant, "multiple")
+            else _get_url_v1(cls, tenant, "bulk")
         )
 
         client.request(
@@ -326,9 +328,9 @@ class DeleteAllAPIResource:
             raise ValueError(GRAPH_REQUIRED_ERROR)
         tenant = client.tenant_guid if cls.REQUIRE_TENANT else None
         url = (
-            _get_url(cls, tenant, graph_id, "all")
+            _get_url_v1(cls, tenant, graph_id, "all")
             if graph_id and cls.REQUIRE_GRAPH_GUID
-            else _get_url(cls, tenant, "all")
+            else _get_url_v1(cls, tenant, "all")
         )
 
         client.request("DELETE", url, headers=JSON_CONTENT_TYPE)
@@ -358,9 +360,9 @@ class AllRetrievableAPIResource:
             raise ValueError(GRAPH_REQUIRED_ERROR)
         tenant = client.tenant_guid if cls.REQUIRE_TENANT else None
         url = (
-            _get_url(cls, tenant, graph_id)
+            _get_url_v1(cls, tenant, graph_id)
             if graph_id and cls.REQUIRE_GRAPH_GUID
-            else _get_url(cls, tenant)
+            else _get_url_v1(cls, tenant)
         )
         instances = client.request("GET", url)
 
@@ -385,7 +387,7 @@ class SearchableAPIResource:
     REQUIRE_TENANT: bool = True
 
     @classmethod
-    def search(cls, graph_id: str = None, **data) -> BaseModel:
+    def search(cls, graph_id: str | None = None, **data) -> BaseModel:
         """
         Search for resources based on the provided criteria.
         """
@@ -394,9 +396,9 @@ class SearchableAPIResource:
             raise ValueError(TENANT_REQUIRED_ERROR)
         tenant = client.tenant_guid if cls.REQUIRE_TENANT else None
         url = (
-            _get_url(cls, tenant, graph_id, "search")
+            _get_url_v1(cls, tenant, graph_id, "search")
             if graph_id and cls.REQUIRE_GRAPH_GUID
-            else _get_url(cls, tenant, "search")
+            else _get_url_v1(cls, tenant, "search")
         )
         result_model = cls.SEARCH_MODELS[1]
 
@@ -421,10 +423,168 @@ class ExportGexfMixin:
         if cls.REQUIRE_TENANT and client.tenant_guid is None:
             raise ValueError(TENANT_REQUIRED_ERROR)
         tenant = client.tenant_guid if cls.REQUIRE_TENANT else None
-        url = _get_url(cls, tenant, graph_id, "export", "gexf", **params)
+        url = _get_url_v1(cls, tenant, graph_id, "export", "gexf", **params)
         response = client.request("GET", url)
         try:
             return response.decode("utf-8")
         except Exception as e:
             log_error(Severity_Enum.Error.value, f"Error exporting GEXF: {response}")
             raise SdkException("Error exporting GEXF") from e
+
+
+class EnumerableAPIResource:
+    """Mixin class for enumerating API resources."""
+
+    REQUIRE_TENANT: bool = True
+
+    @classmethod
+    def enumerate(cls) -> "EnumerationResultModel":
+        """
+        Enumerates resources of a given type.
+
+        Returns:
+            EnumerationResultModel: The enumeration results containing the list of resources
+                and any pagination metadata.
+
+        Raises:
+            ValueError: If tenant GUID is required but not provided.
+        """
+        client = get_client()
+
+        if cls.REQUIRE_TENANT and client.tenant_guid is None:
+            raise ValueError("Tenant GUID is required for this resource.")
+
+        if cls.REQUIRE_TENANT:
+            url = _get_url_v2(cls, client.tenant_guid)
+        else:
+            url = _get_url_v2(cls)
+
+        response = client.request("GET", url)
+        return (
+            EnumerationResultModel[cls.MODEL].model_validate(response)
+            if cls.MODEL
+            else response
+        )
+
+
+class EnumerableAPIResourceWithData:
+    """Mixin class for enumerating API resources with data using V1 URL helper."""
+
+    ENUMERABLE_REQUEST_MODEL: Type[BaseModel] = EnumerationQueryModel
+    REQUIRE_TENANT: bool = True
+
+    @classmethod
+    def enumerate_with_query(cls, **kwargs) -> "EnumerationResultModel":
+        """
+        Enumerates resources of a given type with data using a query model.
+
+        This method supports advanced querying capabilities through the ENUMERABLE_REQUEST_MODEL,
+        which defaults to EnumerationQueryModel.
+
+        Args:
+            **kwargs: Query parameters that conform to the ENUMERABLE_REQUEST_MODEL schema.
+                These parameters will be validated against the model before making the request.
+
+        Returns:
+            EnumerationResultModel: The enumeration results containing the list of resources
+                and any pagination metadata.
+
+        Raises:
+            ValueError: If tenant GUID is required but not provided.
+            ValidationError: If the provided query parameters don't match the ENUMERABLE_REQUEST_MODEL schema.
+        """
+        client = get_client()
+
+        data_dict = kwargs.pop(
+            "_data", kwargs.copy()
+        )  # Get 'data' if provided, else use kwargs
+
+        if cls.REQUIRE_TENANT and client.tenant_guid is None:
+            raise ValueError("Tenant GUID is required for this resource.")
+
+        if cls.REQUIRE_TENANT:
+            url = _get_url_v2(cls, client.tenant_guid, **kwargs)
+        else:
+            url = _get_url_v2(cls, **kwargs)
+
+        data = cls.ENUMERABLE_REQUEST_MODEL(**data_dict).model_dump(
+            mode="json", by_alias=True, exclude_unset=True
+        )
+
+        response = client.request("POST", url, json=data)
+        return (
+            EnumerationResultModel[cls.MODEL].model_validate(response)
+            if cls.MODEL
+            else response
+        )
+
+
+class RetrievableStatisticsMixin:
+    """Mixin class for retrieving statistics for a given resource."""
+
+    STATS_MODEL: Optional[Type[BaseModel]] = None
+
+    @classmethod
+    def retrieve_statistics(cls, resource_guid: str | None = None, **kwargs):
+        """
+        Retrieves statistics for a given resource.
+
+        Args:
+            resource_guid (str): The unique identifier of the resource.
+            **kwargs: Additional keyword arguments for the request.
+
+        Returns:
+            STATS_MODEL: The statistics data for the resource, validated against STATS_MODEL if defined.
+
+        Raises:
+            ValueError: If tenant GUID is required but not provided.
+        """
+        client = get_client()
+
+        if cls.REQUIRE_TENANT and client.tenant_guid is None:
+            raise ValueError("Tenant GUID is required for this resource.")
+
+        if cls.REQUIRE_TENANT:
+            url = _get_url_v1(cls, client.tenant_guid, resource_guid, "stats", **kwargs)
+        else:
+            url = _get_url_v1(cls, resource_guid, "stats", **kwargs)
+
+        return client.request("GET", url)
+
+
+class RetrievableFirstMixin:
+    """Mixin class for retrieving the first resource of a given type."""
+
+    SEARCH_MODELS: Optional[
+        tuple[Optional[type[BaseModel]], Optional[type[BaseModel]]]
+    ] = None
+    MODEL: Optional[Type[BaseModel]] = None
+    REQUIRE_TENANT: bool = True
+    REQUIRE_GRAPH_GUID: bool = True
+
+    @classmethod
+    def retrieve_first(cls, graph_id: str | None = None, **kwargs) -> "BaseModel":
+        """
+        Retrieves the first resource of a given type.
+        """
+        client = get_client()
+        if cls.REQUIRE_TENANT and client.tenant_guid is None:
+            raise ValueError(TENANT_REQUIRED_ERROR)
+        tenant = client.tenant_guid if cls.REQUIRE_TENANT else None
+        url = (
+            _get_url_v1(cls, tenant, graph_id, "first")
+            if graph_id and cls.REQUIRE_GRAPH_GUID
+            else _get_url_v1(cls, tenant, "first")
+        )
+
+        data = cls.SEARCH_MODELS[0](**kwargs).model_dump(
+            mode="json", by_alias=True, exclude_unset=True
+        )
+        instance = client.request(
+            "POST",
+            url,
+            data=json.dumps(data).encode(),
+            headers=JSON_CONTENT_TYPE,
+            timeout=120,
+        )
+        return cls.MODEL.model_validate(instance) if cls.MODEL else instance

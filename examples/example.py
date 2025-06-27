@@ -1,16 +1,41 @@
+from pprint import pprint
+
 import litegraph
 
 litegraph.configure(
-    endpoint="http://192.168.101.63:8701",
+    endpoint="http://localhost:8701",
     tenant_guid="00000000-0000-0000-0000-000000000000",
     graph_guid="00000000-0000-0000-0000-000000000000",
     access_key="litegraphadmin",
 )
 
 # Check if tenant exists
-exists = litegraph.Graph.exists(guid="00000000-0000-0000-0000-000000000000")
+exists = litegraph.Tenant.exists(guid="00000000-0000-0000-0000-000000000000")
 print(f"Tenant exists: {exists}")
 
+# Enumerate tenants
+tenants = litegraph.Tenant.enumerate_with_query(
+    expr=litegraph.ExprModel(Left="Name", Operator="Equals", Right="Test")
+)
+print(f"Tenants: {tenants}")
+
+# Retrieve statistics for a tenant
+statistics = litegraph.Tenant.retrieve_statistics(
+    tenant_guid="00000000-0000-0000-0000-000000000000"
+)
+print(f"Statistics: {statistics}")
+
+statistics = litegraph.Tenant.retrieve_statistics()
+print(f"Statistics: {statistics}")
+
+# Retrieve statistics for a graph
+statistics = litegraph.Graph.retrieve_statistics(
+    graph_guid="00000000-0000-0000-0000-000000000000"
+)
+print(f"Statistics: {statistics}")
+
+statistics = litegraph.Graph.retrieve_statistics()
+print(f"Statistics: {statistics}")
 
 # Create a new credential
 new_tenant = litegraph.Credential.create(
@@ -79,9 +104,38 @@ print("Vector deleted")
 
 # Search vectors
 vectors = litegraph.Vector.search_vectors(
-    domain="Node",
+    domain="Graph",
     embeddings=[0.1, 0.2, 0.3],
     tenant_guid="00000000-0000-0000-0000-000000000000",
     graph_guid="00000000-0000-0000-0000-000000000000",
 )
-print(f"Vectors: {vectors}")
+pprint(f"Vectors: {vectors}")
+
+# Authentication
+token = litegraph.Authentication.generate_authentication_token(
+    email="default@user.com",
+    password="password",
+    tenant_guid="00000000-0000-0000-0000-000000000000",
+)
+print(f"Token: {token}")
+
+# Retrieve token details
+token_details = litegraph.Authentication.retrieve_token_details(
+    token=token.token,
+)
+print(f"Token details: {token_details}")
+
+# Retrieve tenants for email
+tenants = litegraph.Authentication.retrieve_tenants_for_email(
+    email="default@user.com",
+)
+print(f"Tenants: {tenants}")
+
+graph = litegraph.Graph.retrieve_first()
+pprint(f"Graph: {graph}")
+
+node = litegraph.Node.retrieve_first(graph_guid="00000000-0000-0000-0000-000000000000")
+pprint(f"Node: {node}")
+
+edge = litegraph.Edge.retrieve_first(graph_guid="00000000-0000-0000-0000-000000000000")
+pprint(f"Edge: {edge}")

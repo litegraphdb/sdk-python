@@ -5,6 +5,7 @@ class EnumerationOrder_Enum(str, Enum):
     """
     Enumeration order
     """
+
     CreatedAscending = "CreatedAscending"
     CreatedDescending = "CreatedDescending"
     NameAscending = "NameAscending"

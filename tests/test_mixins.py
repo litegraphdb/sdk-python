@@ -314,7 +314,7 @@ def test_create_multiple_resources(mock_client):
     mock_client.request.assert_called()
     called_args = mock_client.request.call_args
     assert called_args[0][0] == "PUT"
-    assert "multiple" in called_args[0][1]
+    assert "bulk" in called_args[0][1]
 
 
 def test_delete_all_resources(mock_client):
@@ -371,7 +371,7 @@ def test_delete_multiple_resources(mock_client):
     mock_client.request.assert_called_once()
     called_args = mock_client.request.call_args
     assert called_args[0][0] == "DELETE"
-    assert "multiple" in called_args[0][1]
+    assert "bulk" in called_args[0][1]
     assert called_args[1]["headers"] == {"Content-Type": "application/json"}
     assert called_args[1]["json"] == resource_ids
 

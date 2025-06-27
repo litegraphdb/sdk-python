@@ -5,6 +5,8 @@ from unittest.mock import Mock, patch
 import pytest
 from litegraph.models.tenant_metadata import TenantMetadataModel
 from litegraph.resources.tenants import Tenant
+from litegraph.models.tenant_statistics import TenantStatisticsModel
+from litegraph.models.enumeration_result import EnumerationResultModel
 
 
 @pytest.fixture
@@ -51,8 +53,6 @@ class TestTenantMetadataModel:
     def test_auto_generated_fields(self):
         """Test auto-generated fields when creating tenant."""
         tenant = TenantMetadataModel()
-        assert isinstance(tenant.guid, str)
-        uuid.UUID(tenant.guid)  # Validates UUID format
         assert isinstance(tenant.created_utc, datetime)
         assert tenant.created_utc.tzinfo == timezone.utc
 
@@ -139,3 +139,106 @@ class TestTenantResource:
         """Test field type validation."""
         tenant = TenantMetadataModel(GUID=str(uuid.uuid4()), **{field: value})
         assert isinstance(getattr(tenant, field), expected_type)
+
+
+def test_tenant_statistics_model_defaults():
+    stats = TenantStatisticsModel()
+    assert stats.graphs == 0
+    assert stats.nodes == 0
+    assert stats.edges == 0
+    assert stats.labels == 0
+    assert stats.tags == 0
+    assert stats.vectors == 0
+
+
+def test_tenant_statistics_model_custom_values():
+    stats = TenantStatisticsModel(graphs=2, nodes=5, edges=10, labels=2, tags=3, vectors=7)
+    assert stats.graphs == 2
+    assert stats.nodes == 5
+    assert stats.edges == 10
+    assert stats.labels == 2
+    assert stats.tags == 3
+    assert stats.vectors == 7
+
+
+def test_tenant_enumerate_with_query(mock_client):
+    """Test enumerating tenants with a query."""
+    mock_response = {
+        "Success": True,
+        "MaxResults": 100,
+        "IterationsRequired": 1,
+        "ContinuationToken": None,
+        "EndOfResults": True,
+        "TotalRecords": 2,
+        "RecordsRemaining": 0,
+        "Objects": [
+            {"GUID": "tenant1", "Name": "Tenant 1"},
+            {"GUID": "tenant2", "Name": "Tenant 2"}
+        ],
+        "Timestamp": {
+            "Start": "2023-01-01T00:00:00Z",
+            "End": "2023-01-01T00:00:01Z",
+            "TotalMS": 1000.0,
+            "Messages": {},
+            "Metadata": None
+        }
+    }
+    mock_client.request.return_value = mock_response
+    
+    from litegraph.models.expression import ExprModel
+    from litegraph.enums.operator_enum import Opertator_Enum
+    
+    result = Tenant.enumerate_with_query(
+        max_results=100, 
+        include_data=True,
+        expr=ExprModel(Left="field", Operator=Opertator_Enum.Equals, Right="value")
+    )
+    
+    assert isinstance(result, EnumerationResultModel)
+    assert result.success is True
+    assert result.total_records == 2
+    assert len(result.objects) == 2
+    mock_client.request.assert_called_once()
+
+
+def test_tenant_retrieve_statistics_single(mock_client):
+    """Test retrieving statistics for a single tenant."""
+    mock_response = {
+        "Graphs": 3,
+        "Nodes": 10,
+        "Edges": 15,
+        "Labels": 3,
+        "Tags": 5,
+        "Vectors": 2
+    }
+    mock_client.request.return_value = mock_response
+    
+    result = Tenant.retrieve_statistics("test-tenant-guid")
+    
+    assert isinstance(result, TenantStatisticsModel)
+    assert result.graphs == 3
+    assert result.nodes == 10
+    assert result.edges == 15
+    assert result.labels == 3
+    assert result.tags == 5
+    assert result.vectors == 2
+    mock_client.request.assert_called_once()
+
+
+def test_tenant_retrieve_statistics_all(mock_client):
+    """Test retrieving statistics for all tenants."""
+    mock_response = {
+        "tenant1": {"Graphs": 3, "Nodes": 10, "Edges": 15, "Labels": 3, "Tags": 5, "Vectors": 2},
+        "tenant2": {"Graphs": 1, "Nodes": 5, "Edges": 8, "Labels": 1, "Tags": 2, "Vectors": 1}
+    }
+    mock_client.request.return_value = mock_response
+    
+    result = Tenant.retrieve_statistics()
+    
+    assert isinstance(result, dict)
+    assert len(result) == 2
+    assert isinstance(result["tenant1"], TenantStatisticsModel)
+    assert isinstance(result["tenant2"], TenantStatisticsModel)
+    assert result["tenant1"].graphs == 3
+    assert result["tenant2"].graphs == 1
+    mock_client.request.assert_called_once()

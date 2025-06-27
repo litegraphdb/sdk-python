@@ -1,8 +1,10 @@
 import uuid
 from datetime import datetime, timezone
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from ..models.vector_metadata import VectorMetadataModel
 
 
 class EdgeModel(BaseModel):
@@ -34,4 +36,8 @@ class EdgeModel(BaseModel):
     labels: Optional[list] = Field(default_factory=list, alias="Labels")
     tags: Optional[dict] = Field(default_factory=dict, alias="Tags")
     data: Optional[dict] = Field(default=None, alias="Data")
+    vectors: Optional[List[VectorMetadataModel]] = Field(
+        default_factory=list, alias="Vectors"
+    )
+
     model_config = ConfigDict(populate_by_name=True)

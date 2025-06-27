@@ -5,6 +5,7 @@ class Severity_Enum(str, Enum):
     """
     Severity Enum
     """
+
     Debug = "DEBUG"  # 0
     Info = "INFO"  # 1
     Warn = "WARNING"  # 2

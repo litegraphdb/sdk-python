@@ -4,6 +4,18 @@ from datetime import datetime, timezone
 import pytest
 from litegraph.models.node import NodeModel
 from pydantic import ValidationError
+from litegraph.resources.nodes import Node
+from litegraph.models.enumeration_result import EnumerationResultModel
+from unittest.mock import Mock
+
+
+@pytest.fixture
+def mock_client(monkeypatch):
+    """Create a mock client and configure it."""
+    client = Mock()
+    client.base_url = "http://test-api.com"
+    monkeypatch.setattr("litegraph.configuration._client", client)
+    return client
 
 
 @pytest.fixture
@@ -203,3 +215,84 @@ def test_created_utc_timezone():
         GUID=str(uuid.uuid4()), GraphGUID=str(uuid.uuid4()), CreatedUtc=custom_date
     )
     assert node.created_utc.tzinfo == timezone.utc
+
+
+def test_node_enumerate_with_query(mock_client):
+    """Test enumerating nodes with a query."""
+    mock_response = {
+        "Success": True,
+        "MaxResults": 50,
+        "IterationsRequired": 1,
+        "ContinuationToken": None,
+        "EndOfResults": True,
+        "TotalRecords": 3,
+        "RecordsRemaining": 0,
+        "Objects": [
+            {"GUID": "node1", "Name": "Node 1", "TenantGUID": "tenant1", "GraphGUID": "graph1"},
+            {"GUID": "node2", "Name": "Node 2", "TenantGUID": "tenant1", "GraphGUID": "graph1"},
+            {"GUID": "node3", "Name": "Node 3", "TenantGUID": "tenant1", "GraphGUID": "graph1"}
+        ],
+        "Timestamp": {
+            "Start": "2023-01-01T00:00:00Z",
+            "End": "2023-01-01T00:00:01Z",
+            "TotalMS": 500.0,
+            "Messages": {},
+            "Metadata": None
+        }
+    }
+    mock_client.request.return_value = mock_response
+    
+    from litegraph.models.expression import ExprModel
+    from litegraph.enums.operator_enum import Opertator_Enum
+    
+    result = Node.enumerate_with_query(
+        max_results=50,
+        include_data=True,
+        labels=["TestLabel"],
+        tags={"type": "test"},
+        expr=ExprModel(Left="field", Operator=Opertator_Enum.Equals, Right="value")
+    )
+    
+    assert isinstance(result, EnumerationResultModel)
+    assert result.success is True
+    assert result.total_records == 3
+    assert len(result.objects) == 3
+    assert result.max_results == 50
+    mock_client.request.assert_called_once()
+
+
+def test_node_enumerate_with_query_empty_result(mock_client):
+    """Test enumerating nodes with empty result."""
+    mock_response = {
+        "Success": True,
+        "MaxResults": 50,
+        "IterationsRequired": 0,
+        "ContinuationToken": None,
+        "EndOfResults": True,
+        "TotalRecords": 0,
+        "RecordsRemaining": 0,
+        "Objects": [],
+        "Timestamp": {
+            "Start": "2023-01-01T00:00:00Z",
+            "End": "2023-01-01T00:00:01Z",
+            "TotalMS": 100.0,
+            "Messages": {},
+            "Metadata": None
+        }
+    }
+    mock_client.request.return_value = mock_response
+    
+    from litegraph.models.expression import ExprModel
+    from litegraph.enums.operator_enum import Opertator_Enum
+    
+    result = Node.enumerate_with_query(
+        max_results=50,
+        expr=ExprModel(Left="field", Operator=Opertator_Enum.Equals, Right="value")
+    )
+    
+    assert isinstance(result, EnumerationResultModel)
+    assert result.success is True
+    assert result.total_records == 0
+    assert len(result.objects) == 0
+    assert result.end_of_results is True
+    mock_client.request.assert_called_once()
