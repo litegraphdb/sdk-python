@@ -139,3 +139,9 @@ pprint(f"Node: {node}")
 
 edge = litegraph.Edge.retrieve_first(graph_guid="00000000-0000-0000-0000-000000000000")
 pprint(f"Edge: {edge}")
+
+nodes = litegraph.Node.retrieve_many(
+    guids=["00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000001"],
+    graph_guid="00000000-0000-0000-0000-000000000000"
+)
+pprint(f"Nodes: {nodes}")

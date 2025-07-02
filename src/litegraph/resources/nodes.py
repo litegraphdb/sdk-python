@@ -10,6 +10,7 @@ from ..mixins import (
     ExistsAPIResource,
     RetrievableAPIResource,
     RetrievableFirstMixin,
+    RetrievableManyMixin,
     SearchableAPIResource,
     UpdatableAPIResource,
 )
@@ -32,6 +33,7 @@ class Node(
     EnumerableAPIResource,
     EnumerableAPIResourceWithData,
     RetrievableFirstMixin,
+    RetrievableManyMixin,
 ):
     """
     Node resource class.

@@ -6,6 +6,7 @@ from ..mixins import (
     EnumerableAPIResourceWithData,
     ExistsAPIResource,
     RetrievableAPIResource,
+    RetrievableManyMixin,
     RetrievableStatisticsMixin,
     UpdatableAPIResource,
 )
@@ -24,6 +25,7 @@ class Tenant(
     EnumerableAPIResource,
     EnumerableAPIResourceWithData,
     RetrievableStatisticsMixin,
+    RetrievableManyMixin,
 ):
     RESOURCE_NAME: str = "tenants"
     MODEL = TenantMetadataModel

@@ -7,6 +7,7 @@ from ..mixins import (
     EnumerableAPIResourceWithData,
     ExistsAPIResource,
     RetrievableAPIResource,
+    RetrievableManyMixin,
     UpdatableAPIResource,
 )
 from ..models.enumeration_result import EnumerationResultModel
@@ -23,6 +24,7 @@ class Tag(
     DeletableAPIResource,
     EnumerableAPIResource,
     EnumerableAPIResourceWithData,
+    RetrievableManyMixin,
 ):
     """Tags resource."""
 
