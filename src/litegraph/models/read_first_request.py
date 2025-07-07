@@ -1,5 +1,7 @@
-from pydantic import BaseModel, Field
 from typing import Dict, List, Optional
+
+from pydantic import BaseModel, Field
+
 
 class ReadFirstRequest(BaseModel):
     ordering: Optional[str] = Field(alias="Ordering")

@@ -589,6 +589,7 @@ class RetrievableFirstMixin:
         )
         return cls.MODEL.model_validate(instance) if cls.MODEL else instance
 
+
 class RetrievableManyMixin:
     """Mixin class for retrieving many resources of a given type."""
 
@@ -597,7 +598,9 @@ class RetrievableManyMixin:
     REQUIRE_GRAPH_GUID: bool = True
 
     @classmethod
-    def retrieve_many(cls, guids: list[str], graph_guid: str | None = None) -> "BaseModel":
+    def retrieve_many(
+        cls, guids: list[str], graph_guid: str | None = None
+    ) -> "BaseModel":
         """
         Retrieves many resources of a given type.
         """
@@ -615,4 +618,8 @@ class RetrievableManyMixin:
             url,
             headers=JSON_CONTENT_TYPE,
         )
-        return [cls.MODEL.model_validate(item) for item in instance] if cls.MODEL else instance
+        return (
+            [cls.MODEL.model_validate(item) for item in instance]
+            if cls.MODEL
+            else instance
+        )

@@ -1,12 +1,11 @@
-from pydantic import BaseModel
+from ..configuration import get_client
 from ..mixins import (
     AllRetrievableAPIResource,
+    DeletableAPIResource,
     ExistsAPIResource,
     RetrievableAPIResource,
-    DeletableAPIResource
 )
 from ..models.backup import BackupModel
-from ..configuration import get_client
 from ..utils.url_helper import _get_url
 
 
@@ -19,6 +18,7 @@ class Admin(
     """
     Admin resource class.
     """
+
     REQUIRE_TENANT = False
     REQUIRE_GRAPH_GUID = False
 
@@ -39,7 +39,7 @@ class Admin(
         try:
             client.request("POST", url, json={"Filename": filename})
             return True
-        except Exception as e:
+        except Exception:
             return False
 
     @classmethod
@@ -53,7 +53,7 @@ class Admin(
         Returns:
             True if the backup exists, False otherwise.
         """
-        cls.RESOURCE_NAME = 'backups'
+        cls.RESOURCE_NAME = "backups"
         return super().exists(filename)
 
     @classmethod
@@ -64,7 +64,7 @@ class Admin(
         Returns:
             A list of all backups.
         """
-        cls.RESOURCE_NAME = 'backups'
+        cls.RESOURCE_NAME = "backups"
         return super().retrieve_all()
 
     @classmethod
@@ -78,9 +78,9 @@ class Admin(
         Returns:
             The backup.
         """
-        cls.RESOURCE_NAME = 'backups'
+        cls.RESOURCE_NAME = "backups"
         return super().retrieve(filename)
-    
+
     @classmethod
     def delete(cls, filename: str) -> bool:
         """
@@ -90,15 +90,15 @@ class Admin(
             filename: The name of the backup file.
 
         Returns:
-            True if the backup was deleted successfully, False otherwise.   
+            True if the backup was deleted successfully, False otherwise.
         """
-        cls.RESOURCE_NAME = 'backups'
+        cls.RESOURCE_NAME = "backups"
         try:
             super().delete(filename)
             return True
-        except Exception as e:
+        except Exception:
             return False
-        
+
     @classmethod
     def flush_db_to_disk(cls) -> bool:
         """
@@ -113,8 +113,5 @@ class Admin(
         try:
             client.request("POST", url, json={})
             return True
-        except Exception as e:
+        except Exception:
             return False
-
-
-
