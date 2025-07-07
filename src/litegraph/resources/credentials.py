@@ -6,6 +6,7 @@ from ..mixins import (
     EnumerableAPIResourceWithData,
     ExistsAPIResource,
     RetrievableAPIResource,
+    RetrievableManyMixin,
     UpdatableAPIResource,
 )
 from ..models.credential import CredentialModel
@@ -21,6 +22,7 @@ class Credential(
     DeletableAPIResource,
     EnumerableAPIResource,
     EnumerableAPIResourceWithData,
+    RetrievableManyMixin,
 ):
     """Credentials resource."""
 

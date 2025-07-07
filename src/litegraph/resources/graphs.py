@@ -13,6 +13,7 @@ from ..mixins import (
     ExportGexfMixin,
     RetrievableAPIResource,
     RetrievableFirstMixin,
+    RetrievableManyMixin,
     RetrievableStatisticsMixin,
     SearchableAPIResource,
     UpdatableAPIResource,
@@ -38,6 +39,7 @@ class Graph(
     EnumerableAPIResourceWithData,
     RetrievableStatisticsMixin,
     RetrievableFirstMixin,
+    RetrievableManyMixin,
 ):
     """
     Graph resource class.

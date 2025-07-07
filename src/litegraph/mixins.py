@@ -588,3 +588,38 @@ class RetrievableFirstMixin:
             timeout=120,
         )
         return cls.MODEL.model_validate(instance) if cls.MODEL else instance
+
+
+class RetrievableManyMixin:
+    """Mixin class for retrieving many resources of a given type."""
+
+    MODEL: Optional[Type[BaseModel]] = None
+    REQUIRE_TENANT: bool = True
+    REQUIRE_GRAPH_GUID: bool = True
+
+    @classmethod
+    def retrieve_many(
+        cls, guids: list[str], graph_guid: str | None = None
+    ) -> "BaseModel":
+        """
+        Retrieves many resources of a given type.
+        """
+        client = get_client()
+        if cls.REQUIRE_TENANT and client.tenant_guid is None:
+            raise ValueError(TENANT_REQUIRED_ERROR)
+        tenant = client.tenant_guid if cls.REQUIRE_TENANT else None
+        url = (
+            _get_url_v1(cls, tenant, graph_guid, guids=",".join(guids))
+            if graph_guid and cls.REQUIRE_GRAPH_GUID
+            else _get_url_v1(cls, tenant, guids=",".join(guids))
+        )
+        instance = client.request(
+            "GET",
+            url,
+            headers=JSON_CONTENT_TYPE,
+        )
+        return (
+            [cls.MODEL.model_validate(item) for item in instance]
+            if cls.MODEL
+            else instance
+        )
