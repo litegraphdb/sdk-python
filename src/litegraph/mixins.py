@@ -169,7 +169,7 @@ class RetrievableAPIResource:
     REQUIRE_TENANT: bool = True
 
     @classmethod
-    def retrieve(cls, guid: str) -> "BaseModel":
+    def retrieve(cls, guid: str, **kwargs) -> "BaseModel":
         """
         Retrieve a specific instance of the resource by its ID.
         """
@@ -180,10 +180,16 @@ class RetrievableAPIResource:
         if cls.REQUIRE_GRAPH_GUID and not graph_id:
             raise ValueError(GRAPH_REQUIRED_ERROR)
         tenant = client.tenant_guid if cls.REQUIRE_TENANT else None
+        include = {}
+        if kwargs.get("include_data"):
+            include["incldata"] = None
+        if kwargs.get("include_subordinates"):
+            include["inclsub"] = None
+
         url = (
-            _get_url_v1(cls, tenant, graph_id, guid)
+            _get_url_v1(cls, tenant, graph_id, guid, **include)
             if graph_id and cls.REQUIRE_GRAPH_GUID
-            else _get_url_v1(cls, tenant, guid)
+            else _get_url_v1(cls, tenant, guid, **include)
         )
         instance = client.request("GET", url)
 
@@ -348,7 +354,7 @@ class AllRetrievableAPIResource:
     REQUIRE_TENANT: bool = True
 
     @classmethod
-    def retrieve_all(cls) -> list["BaseModel"]:
+    def retrieve_all(cls, **kwargs) -> list["BaseModel"]:
         """
         Retrieve all instances of the resource.
         """
@@ -359,10 +365,16 @@ class AllRetrievableAPIResource:
         if cls.REQUIRE_GRAPH_GUID and not graph_id:
             raise ValueError(GRAPH_REQUIRED_ERROR)
         tenant = client.tenant_guid if cls.REQUIRE_TENANT else None
+        include = {}
+        if kwargs.get("include_data"):
+            include["incldata"] = None
+        if kwargs.get("include_subordinates"):
+            include["inclsub"] = None
+
         url = (
-            _get_url_v1(cls, tenant, graph_id)
+            _get_url_v1(cls, tenant, graph_id, **include)
             if graph_id and cls.REQUIRE_GRAPH_GUID
-            else _get_url_v1(cls, tenant)
+            else _get_url_v1(cls, tenant, **include)
         )
         instances = client.request("GET", url)
 
@@ -395,6 +407,11 @@ class SearchableAPIResource:
         if cls.REQUIRE_TENANT and client.tenant_guid is None:
             raise ValueError(TENANT_REQUIRED_ERROR)
         tenant = client.tenant_guid if cls.REQUIRE_TENANT else None
+        if data.get("include_data"):
+            data["IncludeData"] = True
+        if data.get("include_subordinates"):
+            data["IncludeSubordinates"] = True
+
         url = (
             _get_url_v1(cls, tenant, graph_id, "search")
             if graph_id and cls.REQUIRE_GRAPH_GUID
@@ -438,7 +455,7 @@ class EnumerableAPIResource:
     REQUIRE_TENANT: bool = True
 
     @classmethod
-    def enumerate(cls) -> "EnumerationResultModel":
+    def enumerate(cls, **kwargs) -> "EnumerationResultModel":
         """
         Enumerates resources of a given type.
 
@@ -454,10 +471,15 @@ class EnumerableAPIResource:
         if cls.REQUIRE_TENANT and client.tenant_guid is None:
             raise ValueError("Tenant GUID is required for this resource.")
 
+        if kwargs.pop("include_data"):
+            kwargs["incldata"] = None
+        if kwargs.pop("include_subordinates"):
+            kwargs["inclsub"] = None
+
         if cls.REQUIRE_TENANT:
-            url = _get_url_v2(cls, client.tenant_guid)
+            url = _get_url_v2(cls, client.tenant_guid, **kwargs)
         else:
-            url = _get_url_v2(cls)
+            url = _get_url_v2(cls, **kwargs)
 
         response = client.request("GET", url)
         return (
@@ -501,6 +523,11 @@ class EnumerableAPIResourceWithData:
 
         if cls.REQUIRE_TENANT and client.tenant_guid is None:
             raise ValueError("Tenant GUID is required for this resource.")
+
+        if data_dict.pop("include_data", False):
+            data_dict["IncludeData"] = True
+        if data_dict.pop("include_subordinates", False):
+            data_dict["IncludeSubordinates"] = True
 
         if cls.REQUIRE_TENANT:
             url = _get_url_v2(cls, client.tenant_guid, **kwargs)
@@ -571,6 +598,12 @@ class RetrievableFirstMixin:
         if cls.REQUIRE_TENANT and client.tenant_guid is None:
             raise ValueError(TENANT_REQUIRED_ERROR)
         tenant = client.tenant_guid if cls.REQUIRE_TENANT else None
+
+        if kwargs.pop("include_data"):
+            kwargs["IncludeData"] = True
+        if kwargs.pop("include_subordinates"):
+            kwargs["IncludeSubordinates"] = True
+
         url = (
             _get_url_v1(cls, tenant, graph_id, "first")
             if graph_id and cls.REQUIRE_GRAPH_GUID
