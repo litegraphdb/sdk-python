@@ -6,7 +6,7 @@ from ..mixins import (
     RetrievableAPIResource,
 )
 from ..models.backup import BackupModel
-from ..utils.url_helper import _get_url
+from ..utils.url_helper import _get_url_v1
 
 
 class Admin(
@@ -15,6 +15,7 @@ class Admin(
     AllRetrievableAPIResource,
     DeletableAPIResource,
 ):
+    MODEL = BackupModel
     """
     Admin resource class.
     """
@@ -35,7 +36,7 @@ class Admin(
         """
         client = get_client()
 
-        url = _get_url(cls, "backups")
+        url = _get_url_v1(cls, "backups")
         try:
             client.request("POST", url, json={"Filename": filename})
             return True
@@ -109,7 +110,7 @@ class Admin(
         """
         client = get_client()
 
-        url = _get_url(cls, "backups")
+        url = _get_url_v1(cls, "flush")
         try:
             client.request("POST", url, json={})
             return True

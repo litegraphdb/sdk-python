@@ -12,6 +12,7 @@ from .models.route_request import RouteRequestModel
 from .models.route_response import RouteResultModel
 from .models.search_graphs import SearchRequestGraph, SearchResultGraph
 from .models.search_node_edge import SearchRequest, SearchResult, SearchResultEdge
+from .resources.admin import Admin
 from .resources.authentication import Authentication
 from .resources.credentials import Credential
 from .resources.edges import Edge
