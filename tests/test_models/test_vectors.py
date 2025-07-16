@@ -176,8 +176,8 @@ def test_vector_metadata_model():
         "Embeddings": [0.1, 0.2, 0.3],
         "Content": "test content",
         "Dimensionality": 3,
-        "CreatedUtc": "2024-01-01T00:00:00Z",
-        "LastUpdateUtc": "2024-01-01T00:00:00Z"
+        "CreatedUtc": "2024-01-01T00:00:00+00:00",
+        "LastUpdateUtc": "2024-01-01T00:00:00+00:00"
     }
 
     model = VectorMetadataModel(**valid_data)
