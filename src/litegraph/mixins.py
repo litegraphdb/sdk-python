@@ -97,6 +97,8 @@ class CreateableAPIResource:
             data = cls.MODEL(**_data).model_dump(
                 mode="json", by_alias=True, exclude_unset=True
             )
+        else:
+            data = _data
 
         # Make request and validate response
         instance = client.request(cls.CREATE_METHOD, url, json=data, headers=headers)
@@ -229,6 +231,8 @@ class UpdatableAPIResource:
             data = cls.MODEL(**kwargs).model_dump(
                 mode="json", by_alias=True, exclude_unset=True, exclude_defaults=True
             )
+        else:
+            data = kwargs
         instance = client.request("PUT", url, json=data)
 
         return cls.MODEL.model_validate(instance) if cls.MODEL else instance
@@ -471,9 +475,9 @@ class EnumerableAPIResource:
         if cls.REQUIRE_TENANT and client.tenant_guid is None:
             raise ValueError("Tenant GUID is required for this resource.")
 
-        if kwargs.pop("include_data"):
+        if kwargs.pop("include_data", False):
             kwargs["incldata"] = None
-        if kwargs.pop("include_subordinates"):
+        if kwargs.pop("include_subordinates", False):
             kwargs["inclsub"] = None
 
         if cls.REQUIRE_TENANT:
@@ -599,9 +603,9 @@ class RetrievableFirstMixin:
             raise ValueError(TENANT_REQUIRED_ERROR)
         tenant = client.tenant_guid if cls.REQUIRE_TENANT else None
 
-        if kwargs.pop("include_data"):
+        if kwargs.pop("include_data", False):
             kwargs["IncludeData"] = True
-        if kwargs.pop("include_subordinates"):
+        if kwargs.pop("include_subordinates", False):
             kwargs["IncludeSubordinates"] = True
 
         url = (

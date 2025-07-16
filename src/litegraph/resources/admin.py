@@ -15,6 +15,7 @@ class Admin(
     AllRetrievableAPIResource,
     DeletableAPIResource,
 ):
+    MODEL = BackupModel
     """
     Admin resource class.
     """
