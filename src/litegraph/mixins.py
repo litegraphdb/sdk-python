@@ -196,6 +196,7 @@ class RetrievableAPIResource:
 
         return cls.MODEL.model_validate(instance) if cls.MODEL else instance
 
+
 class UpdatableAPIResource:
     """
     A mixin class for updating resources.
@@ -363,10 +364,10 @@ class AllRetrievableAPIResource:
         client = get_client()
         if cls.REQUIRE_TENANT and client.tenant_guid is None:
             raise ValueError(TENANT_REQUIRED_ERROR)
-        
+
         # Extract graph_guid from kwargs if provided, otherwise use client.graph_guid
         graph_id = kwargs.pop("graph_guid", None) or client.graph_guid
-        
+
         if cls.REQUIRE_GRAPH_GUID and not graph_id:
             raise ValueError(GRAPH_REQUIRED_ERROR)
         tenant = client.tenant_guid if cls.REQUIRE_TENANT else None

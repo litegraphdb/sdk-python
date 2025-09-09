@@ -60,7 +60,7 @@ class Graph(
         Delete a resource by its ID.
         """
         client = get_client()
-        
+
         if cls.REQUIRE_TENANT and client.tenant_guid is None:
             raise ValueError("Tenant GUID is required for this resource.")
 

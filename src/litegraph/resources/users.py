@@ -43,14 +43,14 @@ class User(
         Retrieve a user by its GUID.
         """
         return super().retrieve(guid, **kwargs)
-    
+
     @classmethod
     def retrieve_multiple(cls, guids: list[str], **kwargs) -> list[UserMasterModel]:
         """
         Retrieve multiple users by their GUIDs.
         """
         return super().retrieve_many(guids, **kwargs)
-    
+
     @classmethod
     def retrieve_all(cls, **kwargs) -> list[UserMasterModel]:
         """

@@ -7,13 +7,13 @@ from ..mixins import (
     CreateableAPIResource,
     CreateableMultipleAPIResource,
     DeletableAPIResource,
+    DeleteMultipleAPIResource,
     EnumerableAPIResource,
     EnumerableAPIResourceWithData,
     ExistsAPIResource,
     RetrievableAPIResource,
     RetrievableManyMixin,
     UpdatableAPIResource,
-    DeleteMultipleAPIResource,
 )
 from ..models.enumeration_result import EnumerationResultModel
 from ..models.vector_metadata import VectorMetadataModel

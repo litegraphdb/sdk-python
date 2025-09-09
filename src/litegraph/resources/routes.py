@@ -36,12 +36,16 @@ class Routes:
             model_data["edge_filter"] = kwargs["edge_filter"]
         if "node_filter" in kwargs:
             model_data["node_filter"] = kwargs["node_filter"]
-        
+
         request_model = cls.MODEL(graph=graph_guid, **model_data)
-        
+
         # Convert to dict using by_alias=True to get the correct field names (From, To, Graph)
         request_data = request_model.model_dump(by_alias=True)
 
-        url = _get_url_v1(cls, tenant, graph_id) if graph_id else _get_url_v1(cls, tenant, graph_guid)
+        url = (
+            _get_url_v1(cls, tenant, graph_id)
+            if graph_id
+            else _get_url_v1(cls, tenant, graph_guid)
+        )
         instance = client.request("POST", url, json=request_data, headers=headers)
         return cls.RESPONSE_MODEL.model_validate(instance) if cls.MODEL else instance

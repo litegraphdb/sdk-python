@@ -28,7 +28,9 @@ class RouteNodes:
         url = (
             _get_url_v1(cls, client.tenant_guid, graph_id, node_guid, "edges/from")
             if graph_id
-            else _get_url_v1(cls, client.tenant_guid, graph_guid, node_guid, "edges/from")
+            else _get_url_v1(
+                cls, client.tenant_guid, graph_guid, node_guid, "edges/from"
+            )
         )
 
         instance = client.request("GET", url)
@@ -127,7 +129,9 @@ class RouteNodes:
         url = (
             _get_url_v1(cls, client.tenant_guid, graph_id, node_guid, "neighbors")
             if graph_id
-            else _get_url_v1(cls, client.tenant_guid, graph_guid, node_guid, "neighbors")
+            else _get_url_v1(
+                cls, client.tenant_guid, graph_guid, node_guid, "neighbors"
+            )
         )
         instance = client.request("GET", url)
         return (
