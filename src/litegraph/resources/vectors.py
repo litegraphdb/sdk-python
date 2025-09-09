@@ -13,6 +13,7 @@ from ..mixins import (
     RetrievableAPIResource,
     RetrievableManyMixin,
     UpdatableAPIResource,
+    DeleteMultipleAPIResource,
 )
 from ..models.enumeration_result import EnumerationResultModel
 from ..models.vector_metadata import VectorMetadataModel
@@ -32,6 +33,7 @@ class Vector(
     EnumerableAPIResource,
     EnumerableAPIResourceWithData,
     RetrievableManyMixin,
+    DeleteMultipleAPIResource,
 ):
     """Vectors resource."""
 

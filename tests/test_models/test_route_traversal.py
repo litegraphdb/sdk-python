@@ -19,6 +19,7 @@ def mock_client(monkeypatch):
     class MockClient:
         def __init__(self):
             self.graph_guid = None  # Initialize with None
+            self.tenant_guid = "test-tenant-guid"  # Add missing tenant_guid
             self.base_url = "http://test-api.com"
 
         def request(self, method, url):

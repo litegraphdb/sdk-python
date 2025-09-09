@@ -46,6 +46,7 @@ class Graph(
     """
 
     RESOURCE_NAME: str = "graphs"
+    REQUIRE_TENANT: bool = True
     REQUIRE_GRAPH_GUID: bool = False
     MODEL = GraphModel
     SEARCH_MODELS = SearchRequestGraph, SearchResultGraph
@@ -59,15 +60,14 @@ class Graph(
         Delete a resource by its ID.
         """
         client = get_client()
-        graph_id = client.graph_guid if cls.REQUIRE_GRAPH_GUID else None
-
-        if cls.REQUIRE_GRAPH_GUID and graph_id is None:
-            raise ValueError("Graph GUID is required for this resource.")
+        
+        if cls.REQUIRE_TENANT and client.tenant_guid is None:
+            raise ValueError("Tenant GUID is required for this resource.")
 
         url = (
-            _get_url_v1(cls, graph_id, resource_id, force=None)
+            _get_url_v1(cls, client.tenant_guid, resource_id, force=None)
             if force
-            else _get_url_v1(cls, graph_id, resource_id)
+            else _get_url_v1(cls, client.tenant_guid, resource_id)
         )
         client.request("DELETE", url)
 
@@ -92,7 +92,7 @@ class Graph(
         client = get_client()
 
         # Construct URL
-        url = _get_url_v1(cls, graph_guid, "existence")
+        url = _get_url_v1(cls, client.tenant_guid, graph_guid, "existence")
 
         # Prepare request data
         data = request.model_dump(mode="json", by_alias=True)

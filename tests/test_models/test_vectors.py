@@ -38,7 +38,7 @@ def valid_vector_data():
 
 
 @pytest.fixture
-def valid_search_result() -> list[VectorSearchResultModel]:
+def valid_search_result(valid_vector_data) -> list[VectorSearchResultModel]:
     """Fixture providing valid vector search result."""
     return [
         VectorSearchResultModel(
@@ -181,11 +181,11 @@ def test_vector_metadata_model():
     }
 
     model = VectorMetadataModel(**valid_data)
-    assert isinstance(model.guid, UUID)
-    assert isinstance(model.tenant_guid, UUID)
-    assert model.graph_guid == UUID(valid_data["GraphGUID"])
-    assert model.node_guid == UUID(valid_data["NodeGUID"])
-    assert model.edge_guid == UUID(valid_data["EdgeGUID"])
+    assert isinstance(model.guid, str)
+    assert isinstance(model.tenant_guid, str)
+    assert model.graph_guid == valid_data["GraphGUID"]
+    assert model.node_guid == valid_data["NodeGUID"]
+    assert model.edge_guid == valid_data["EdgeGUID"]
     assert model.embeddings == valid_data["Embeddings"]
     assert model.content == valid_data["Content"]
     assert model.dimensionality == valid_data["Dimensionality"]

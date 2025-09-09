@@ -23,12 +23,13 @@ class RouteEdges:
         # Define query parameters
         query_params = {"from": from_node_guid, "to": to_node_guid}
         client = get_client()
+        tenant = client.tenant_guid if cls.REQUIRE_TENANT else None
         graph_id = client.graph_guid if cls.REQUIRE_GRAPH_GUID else None
 
         url = (
-            _get_url_v1(cls, graph_guid, "between", **query_params)
+            _get_url_v1(cls, tenant, graph_id, "between", **query_params)
             if graph_id
-            else _get_url_v1(cls, graph_guid)
+            else _get_url_v1(cls, tenant, graph_guid)
         )
 
         instance = client.request("GET", url)

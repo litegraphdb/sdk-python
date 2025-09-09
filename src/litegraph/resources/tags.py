@@ -9,6 +9,7 @@ from ..mixins import (
     RetrievableAPIResource,
     RetrievableManyMixin,
     UpdatableAPIResource,
+    DeleteMultipleAPIResource,
 )
 from ..models.enumeration_result import EnumerationResultModel
 from ..models.tag import TagModel
@@ -22,6 +23,7 @@ class Tag(
     CreateableMultipleAPIResource,
     UpdatableAPIResource,
     DeletableAPIResource,
+    DeleteMultipleAPIResource,
     EnumerableAPIResource,
     EnumerableAPIResourceWithData,
     RetrievableManyMixin,

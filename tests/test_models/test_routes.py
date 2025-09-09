@@ -61,7 +61,7 @@ def mock_response_data():
 
 @pytest.fixture
 def route_request_data():
-    return {"origin": "New York", "destination": "Boston"}
+    return {"from_guid": "node-1", "to_guid": "node-2"}
 
 
 class TestRoutesClass:
@@ -98,7 +98,7 @@ class TestRoutesClass:
         mock_get_url.return_value = "/v1.0/routes"
         mock_configuration._request.return_value = mock_response_data
 
-        result = routes_class.routes("test-graph-guid", origin="A", destination="B")
+        result = routes_class.routes("test-graph-guid", from_guid="node-A", to_guid="node-B")
 
         if routes_class.REQUIRE_GRAPH_GUID:
             mock_get_url.assert_called_once_with(routes_class, "test-graph-guid")

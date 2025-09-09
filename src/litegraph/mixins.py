@@ -29,7 +29,6 @@ class ExistsAPIResource:
         client = get_client()
         if cls.REQUIRE_TENANT and client.tenant_guid is None:
             raise ValueError(TENANT_REQUIRED_ERROR)
-
         graph_id = client.graph_guid
         tenant = client.tenant_guid if cls.REQUIRE_TENANT else None
         url = (
@@ -79,7 +78,7 @@ class CreateableAPIResource:
         if cls.REQUIRE_TENANT and client.tenant_guid is None:
             raise ValueError(TENANT_REQUIRED_ERROR)
 
-        graph_id = client.graph_guid
+        graph_id = kwargs.pop("graph_guid", None) or client.graph_guid
         if cls.REQUIRE_GRAPH_GUID and not graph_id:
             raise ValueError(GRAPH_REQUIRED_ERROR)
 
@@ -178,7 +177,7 @@ class RetrievableAPIResource:
         client = get_client()
         if cls.REQUIRE_TENANT and client.tenant_guid is None:
             raise ValueError(TENANT_REQUIRED_ERROR)
-        graph_id = client.graph_guid
+        graph_id = kwargs.pop("graph_guid", None) or client.graph_guid
         if cls.REQUIRE_GRAPH_GUID and not graph_id:
             raise ValueError(GRAPH_REQUIRED_ERROR)
         tenant = client.tenant_guid if cls.REQUIRE_TENANT else None
@@ -196,7 +195,6 @@ class RetrievableAPIResource:
         instance = client.request("GET", url)
 
         return cls.MODEL.model_validate(instance) if cls.MODEL else instance
-
 
 class UpdatableAPIResource:
     """
@@ -365,7 +363,10 @@ class AllRetrievableAPIResource:
         client = get_client()
         if cls.REQUIRE_TENANT and client.tenant_guid is None:
             raise ValueError(TENANT_REQUIRED_ERROR)
-        graph_id = client.graph_guid
+        
+        # Extract graph_guid from kwargs if provided, otherwise use client.graph_guid
+        graph_id = kwargs.pop("graph_guid", None) or client.graph_guid
+        
         if cls.REQUIRE_GRAPH_GUID and not graph_id:
             raise ValueError(GRAPH_REQUIRED_ERROR)
         tenant = client.tenant_guid if cls.REQUIRE_TENANT else None
@@ -474,6 +475,9 @@ class EnumerableAPIResource:
 
         if cls.REQUIRE_TENANT and client.tenant_guid is None:
             raise ValueError("Tenant GUID is required for this resource.")
+        graph_id = kwargs.pop("graph_guid", None) or client.graph_guid
+        if cls.REQUIRE_GRAPH_GUID and not graph_id:
+            raise ValueError(GRAPH_REQUIRED_ERROR)
 
         if kwargs.pop("include_data", False):
             kwargs["incldata"] = None
@@ -481,7 +485,10 @@ class EnumerableAPIResource:
             kwargs["inclsub"] = None
 
         if cls.REQUIRE_TENANT:
-            url = _get_url_v2(cls, client.tenant_guid, **kwargs)
+            if graph_id and cls.REQUIRE_GRAPH_GUID:
+                url = _get_url_v2(cls, client.tenant_guid, graph_id, **kwargs)
+            else:
+                url = _get_url_v2(cls, client.tenant_guid, **kwargs)
         else:
             url = _get_url_v2(cls, **kwargs)
 
@@ -528,13 +535,21 @@ class EnumerableAPIResourceWithData:
         if cls.REQUIRE_TENANT and client.tenant_guid is None:
             raise ValueError("Tenant GUID is required for this resource.")
 
+        # Extract graph_guid from data_dict if provided, otherwise use client.graph_guid
+        graph_id = data_dict.pop("graph_guid", None) or client.graph_guid
+        if cls.REQUIRE_GRAPH_GUID and not graph_id:
+            raise ValueError(GRAPH_REQUIRED_ERROR)
+
         if data_dict.pop("include_data", False):
             data_dict["IncludeData"] = True
         if data_dict.pop("include_subordinates", False):
             data_dict["IncludeSubordinates"] = True
 
         if cls.REQUIRE_TENANT:
-            url = _get_url_v2(cls, client.tenant_guid, **kwargs)
+            if graph_id and cls.REQUIRE_GRAPH_GUID:
+                url = _get_url_v2(cls, client.tenant_guid, graph_id, **kwargs)
+            else:
+                url = _get_url_v2(cls, client.tenant_guid, **kwargs)
         else:
             url = _get_url_v2(cls, **kwargs)
 

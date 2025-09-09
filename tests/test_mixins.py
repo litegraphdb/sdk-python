@@ -1,3 +1,4 @@
+import uuid
 from typing import Optional
 from unittest.mock import Mock, patch
 from datetime import datetime, timezone
@@ -847,6 +848,64 @@ def test_tenant_required_error_coverage(mock_client):
     # Test ExportGexfMixin
     with pytest.raises(ValueError, match="Tenant GUID is required for this resource"):
         TestExportGexf.export_gexf("test-graph-id")
+
+
+# def test_graph_guid_required_error_coverage(mock_client):
+#     """Test graph GUID required error coverage for mixins that require it."""
+#     # Set graph_guid to None to trigger GRAPH_REQUIRED_ERROR
+#     mock_client.graph_guid = None
+    
+#     # Test CreateableAPIResource
+#     test_data = {"id": "test-id", "name": "Test Resource"}
+#     with pytest.raises(ValueError, match="Graph GUID is required for this resource"):
+#         ResourceModel.create(**test_data)
+    
+#     # Test CreateableMultipleAPIResource - this doesn't validate graph_guid the same way
+#     # It only uses it for URL construction, so we need to mock the response
+#     test_data_list = [{"id": "test-id-1"}, {"id": "test-id-2"}]
+#     mock_client.request.return_value = [{"id": "test-id-1"}, {"id": "test-id-2"}]
+    
+#     result = ResourceModel.create_multiple(test_data_list)
+#     assert isinstance(result, list)
+#     assert len(result) == 2
+#     assert all(isinstance(item, MockModel) for item in result)
+    
+#     # Test RetrievableAPIResource
+#     with pytest.raises(ValueError, match="Graph GUID is required for this resource"):
+#         ResourceModel.retrieve("test-id")
+    
+#     # Test UpdatableAPIResource
+#     with pytest.raises(ValueError, match="Graph GUID is required for this resource"):
+#         ResourceModel.update("test-id", **test_data)
+    
+#     # Test DeletableAPIResource
+#     with pytest.raises(ValueError, match="Graph GUID is required for this resource"):
+#         ResourceModel.delete("test-id")
+    
+#     # Test DeleteMultipleAPIResource
+#     with pytest.raises(ValueError, match="Graph GUID is required for this resource"):
+#         ResourceModel.delete_multiple(["test-id-1", "test-id-2"])
+    
+#     # Test DeleteAllAPIResource
+#     with pytest.raises(ValueError, match="badly formed hexadecimal UUID string"):
+#         ResourceModel.delete_all()
+    
+#     # Test AllRetrievableAPIResource
+#     with pytest.raises(ValueError, match="Graph GUID is required for this resource"):
+#         ResourceModel.retrieve_all()
+    
+#     # Test SearchableAPIResource
+#     with pytest.raises(ValueError, match="Graph GUID is required for this resource"):
+#         ResourceModel.search("test-graph-id")
+    
+#     # Test RetrievableFirstMixin
+#     with pytest.raises(ValueError, match="Graph GUID is required for this resource"):
+#         ResourceModel.retrieve_first("test-graph-id")
+    
+#     # Test RetrievableManyMixin
+#     with pytest.raises(ValueError, match="Graph GUID is required for this resource"):
+#         ResourceModel.retrieve_many(["test-id-1", "test-id-2"], "test-graph-id")
+
 
 def test_tenant_not_required_mixins(mock_client):
     """Test mixins that don't require tenant GUID."""
