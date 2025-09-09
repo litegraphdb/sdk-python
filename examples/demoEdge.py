@@ -1,7 +1,7 @@
 import litegraph
 
 sdk = litegraph.configure(
-    endpoint="http://192.168.101.63:8701",
+    endpoint="http://YOUR_SERVER_URL_HERE:PORT",
     tenant_guid="00000000-0000-0000-0000-000000000000",
     graph_guid="c940d490-6693-4237-bb08-635890c03bcb",
     access_key="litegraphadmin",
