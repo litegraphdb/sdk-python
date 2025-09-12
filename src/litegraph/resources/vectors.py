@@ -7,6 +7,7 @@ from ..mixins import (
     CreateableAPIResource,
     CreateableMultipleAPIResource,
     DeletableAPIResource,
+    DeleteMultipleAPIResource,
     EnumerableAPIResource,
     EnumerableAPIResourceWithData,
     ExistsAPIResource,
@@ -32,6 +33,7 @@ class Vector(
     EnumerableAPIResource,
     EnumerableAPIResourceWithData,
     RetrievableManyMixin,
+    DeleteMultipleAPIResource,
 ):
     """Vectors resource."""
 

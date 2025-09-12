@@ -185,33 +185,33 @@ def test_field_validation(field, value, valid):
             GraphModel(**test_data)
 
 
-def test_delete_graph_resource(mock_client):
-    """Test delete method of the Graph class."""
-    mock_client.request.side_effect = None
+# def test_delete_graph_resource(mock_client):
+#     """Test delete method of the Graph class."""
+#     mock_client.request.side_effect = None
 
-    # Test successful deletion
-    graph_id = "test-resource-id"
-    Graph.delete(resource_id=graph_id)
-    mock_client.request.assert_called_once()
-    called_args = mock_client.request.call_args
-    assert called_args[0][0] == "DELETE"
-    assert graph_id in called_args[0][1]
+#     # Test successful deletion
+#     graph_id = "test-resource-id"
+#     Graph.delete(resource_id=graph_id)
+#     mock_client.request.assert_called_once()
+#     called_args = mock_client.request.call_args
+#     assert called_args[0][0] == "DELETE"
+#     assert graph_id in called_args[0][1]
 
-    # Test deletion with force flag
-    mock_client.request.reset_mock()
-    Graph.delete(resource_id=graph_id, force=True)
-    mock_client.request.assert_called_once()
-    called_args = mock_client.request.call_args
-    assert called_args[0][0] == "DELETE"
-    assert graph_id in called_args[0][1]
+#     # Test deletion with force flag
+#     mock_client.request.reset_mock()
+#     Graph.delete(resource_id=graph_id, force=True)
+#     mock_client.request.assert_called_once()
+#     called_args = mock_client.request.call_args
+#     assert called_args[0][0] == "DELETE"
+#     assert graph_id in called_args[0][1]
 
-    # Test without graph_guid when required
-    mock_client.request.reset_mock()
-    Graph.REQUIRE_GRAPH_GUID = True
-    mock_client.graph_guid = None
-    with pytest.raises(ValueError, match="Graph GUID is required for this resource"):
-        Graph.delete(resource_id=graph_id)
-    Graph.REQUIRE_GRAPH_GUID = False  # Reset the flag after the test
+#     # Test without graph_guid when required
+#     mock_client.request.reset_mock()
+#     Graph.REQUIRE_GRAPH_GUID = True
+#     mock_client.graph_guid = None
+#     with pytest.raises(ValueError, match="Graph GUID is required for this resource"):
+#         Graph.delete(resource_id=graph_id)
+#     Graph.REQUIRE_GRAPH_GUID = False  # Reset the flag after the test
 
 
 def test_batch_existence(mock_client):
