@@ -157,3 +157,25 @@ def delete_graph_force():
 
 
 # delete_graph_force()
+
+
+def retrieve_subgraph():
+    subgraph = litegraph.Graph.retrieve_subgraph(
+        graph_guid="b6eb533b-2f46-47e8-b732-2ec0ea09ae0a",
+        node_guid="2dfef492-601d-4c72-a17c-97b9edbe6b15",
+    )
+    print(subgraph)
+
+
+retrieve_subgraph()
+
+
+def retrieve_subgraph_statistics():
+    statistics = litegraph.Graph.retrieve_subgraph_statistics(
+        graph_guid="b6eb533b-2f46-47e8-b732-2ec0ea09ae0a",
+        node_guid="2dfef492-601d-4c72-a17c-97b9edbe6b15",
+    )
+    print(statistics)
+
+
+retrieve_subgraph_statistics()
