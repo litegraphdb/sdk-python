@@ -137,3 +137,90 @@ class Graph(
         """
         graph_id = graph_id or kwargs.get("graph_guid")
         return super().retrieve_first(graph_id=graph_id, **kwargs)
+
+    @classmethod
+    def retrieve_subgraph_statistics(
+        cls,
+        graph_guid: str,
+        node_guid: str,
+        max_depth: int | None = None,
+        max_nodes: int | None = None,
+        max_edges: int | None = None,
+    ) -> GraphStatisticsModel:
+        """
+        Retrieve the statistics for a subgraph.
+
+        Args:
+            graph_guid: The GUID of the graph.
+            node_guid: The GUID of the node.
+            max_depth: Maximum depth for the subgraph traversal.
+            max_nodes: Maximum number of nodes to include.
+            max_edges: Maximum number of edges to include.
+
+        Returns:
+            GraphStatisticsModel: The statistics for the subgraph.
+        """
+        client = get_client()
+        url = _get_url_v1(
+            cls,
+            client.tenant_guid,
+            graph_guid,
+            "nodes",
+            node_guid,
+            "subgraph",
+            "stats",
+            maxDepth=max_depth,
+            maxNodes=max_nodes,
+            maxEdges=max_edges,
+        )
+        response = client.request("GET", url)
+        return GraphStatisticsModel.model_validate(response)
+
+    @classmethod
+    def retrieve_subgraph(
+        cls,
+        graph_guid: str,
+        node_guid: str,
+        max_depth: int | None = None,
+        max_nodes: int | None = None,
+        max_edges: int | None = None,
+        include_data: bool = True,
+        include_sub: bool = True,
+    ) -> GraphModel:
+        """
+        Retrieve the subgraph.
+
+        Args:
+            graph_guid: The GUID of the graph.
+            node_guid: The GUID of the node.
+            max_depth: Maximum depth for the subgraph traversal.
+            max_nodes: Maximum number of nodes to include.
+            max_edges: Maximum number of edges to include.
+            include_data: Whether to include data in the response.
+            include_sub: Whether to include subgraphs in the response.
+
+        Returns:
+            GraphModel: The subgraph.
+        """
+        client = get_client()
+        query_params = {
+            "maxDepth": max_depth,
+            "maxNodes": max_nodes,
+            "maxEdges": max_edges,
+        }
+        if include_data:
+            query_params["incldata"] = None
+        if include_sub:
+            query_params["inclsub"] = None
+
+        url = _get_url_v1(
+            cls,
+            client.tenant_guid,
+            graph_guid,
+            "nodes",
+            node_guid,
+            "subgraph",
+            **query_params,
+        )
+        response = client.request("GET", url)
+        return GraphModel.model_validate(response)

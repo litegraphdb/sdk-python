@@ -304,3 +304,15 @@ def test_graph_retrieve_statistics_all(mock_client):
     assert result["graph1"].nodes == 10
     assert result["graph2"].nodes == 5
     mock_client.request.assert_called_once()
+
+def test_graph_retrieve_subgraph_statistics(mock_client):
+    """Test retrieving statistics for a subgraph."""
+    mock_response = {
+        "Nodes": 10,
+        "Edges": 15,
+        "Labels": 3,
+        "Tags": 5,
+        "Vectors": 2
+    }
+    mock_client.request.return_value = mock_response
+    result = Graph.retrieve_subgraph_statistics(graph_guid="test-graph-guid", node_guid="test-node-guid")
