@@ -143,3 +143,56 @@ def delete_all_node():
 
 
 # delete_all_node()
+
+
+def delete_all_tenant_nodes():
+    litegraph.Node.delete_all_tenant_nodes(
+        tenant_guid="00000000-0000-0000-0000-000000000000"
+    )
+    print("All tenant nodes deleted")
+
+
+# delete_all_tenant_nodes()
+
+
+def retrieve_all_tenant_nodes():
+    nodes = litegraph.Node.retrieve_all_tenant_nodes(
+        tenant_guid="00000000-0000-0000-0000-000000000000"
+    )
+    print(nodes)
+
+
+# retrieve_all_tenant_nodes()
+
+
+def retrieve_all_graph_nodes():
+    nodes = litegraph.Node.retrieve_all_graph_nodes(
+        tenant_guid="00000000-0000-0000-0000-000000000000",
+        graph_guid="00000000-0000-0000-0000-000000000000",
+    )
+    print(nodes)
+
+
+# retrieve_all_graph_nodes()
+
+
+def retrieve_most_connected_nodes():
+    nodes = litegraph.Node.retrieve_most_connected_nodes(
+        tenant_guid="00000000-0000-0000-0000-000000000000",
+        graph_guid="00000000-0000-0000-0000-000000000000",
+    )
+    print(nodes)
+
+
+# retrieve_most_connected_nodes()
+
+
+def retrieve_least_connected_nodes():
+    nodes = litegraph.Node.retrieve_least_connected_nodes(
+        tenant_guid="00000000-0000-0000-0000-000000000000",
+        graph_guid="00000000-0000-0000-0000-000000000000",
+    )
+    print(nodes)
+
+
+# retrieve_least_connected_nodes()

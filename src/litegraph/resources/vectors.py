@@ -6,13 +6,19 @@ from ..mixins import (
     AllRetrievableAPIResource,
     CreateableAPIResource,
     CreateableMultipleAPIResource,
+    DeletableAllEndpointMixin,
     DeletableAPIResource,
+    DeletableEdgeResourceMixin,
+    DeletableNodeResourceMixin,
     DeleteMultipleAPIResource,
     EnumerableAPIResource,
     EnumerableAPIResourceWithData,
     ExistsAPIResource,
+    RetrievableAllEndpointMixin,
     RetrievableAPIResource,
+    RetrievableEdgeResourceMixin,
     RetrievableManyMixin,
+    RetrievableNodeResourceMixin,
     UpdatableAPIResource,
 )
 from ..models.enumeration_result import EnumerationResultModel
@@ -27,12 +33,18 @@ class Vector(
     CreateableAPIResource,
     CreateableMultipleAPIResource,
     RetrievableAPIResource,
+    RetrievableAllEndpointMixin,
     AllRetrievableAPIResource,
     UpdatableAPIResource,
     DeletableAPIResource,
+    DeletableAllEndpointMixin,
+    DeletableNodeResourceMixin,
+    DeletableEdgeResourceMixin,
     EnumerableAPIResource,
     EnumerableAPIResourceWithData,
     RetrievableManyMixin,
+    RetrievableNodeResourceMixin,
+    RetrievableEdgeResourceMixin,
     DeleteMultipleAPIResource,
 ):
     """Vectors resource."""
@@ -113,3 +125,171 @@ class Vector(
         Enumerate vectors with a query.
         """
         return super().enumerate_with_query(_data=kwargs)
+
+    @classmethod
+    def delete_all_tenant_vectors(cls, tenant_guid: str | None = None) -> None:
+        """
+        Delete all vectors for a tenant.
+        """
+        return super().delete_all_tenant(tenant_guid)
+
+    @classmethod
+    def delete_all_graph_vectors(
+        cls, tenant_guid: str | None = None, graph_guid: str | None = None
+    ) -> None:
+        """
+        Delete all vectors for a graph.
+
+        Args:
+            tenant_guid: The tenant GUID. If not provided, uses client.tenant_guid.
+            graph_guid: The graph GUID. If not provided, uses client.graph_guid.
+        """
+        return super().delete_all_graph(tenant_guid, graph_guid)
+
+    @classmethod
+    def retrieve_all_tenant_vectors(
+        cls, tenant_guid: str | None = None
+    ) -> list[VectorMetadataModel]:
+        """
+        Retrieve all vectors for a tenant.
+        """
+        return super().retrieve_all_tenant(tenant_guid)
+
+    @classmethod
+    def retrieve_all_graph_vectors(
+        cls, tenant_guid: str | None = None, graph_guid: str | None = None
+    ) -> list[VectorMetadataModel]:
+        """
+        Retrieve all vectors for a graph.
+
+        Args:
+            tenant_guid: The tenant GUID. If not provided, uses client.tenant_guid.
+            graph_guid: The graph GUID. If not provided, uses client.graph_guid.
+
+        Returns:
+            List of VectorMetadataModel instances.
+        """
+        return super().retrieve_all_graph(tenant_guid, graph_guid)
+
+    @classmethod
+    def retrieve_node_vectors(
+        cls,
+        node_guid: str,
+        tenant_guid: str | None = None,
+        graph_guid: str | None = None,
+    ) -> list[VectorMetadataModel]:
+        """
+        Retrieve vectors for a specific node.
+
+        Endpoint:
+            /v1.0/tenants/{tenant}/graphs/{graph}/nodes/{node}/vectors
+
+        Args:
+            node_guid: The node GUID.
+            tenant_guid: The tenant GUID. If not provided, uses client.tenant_guid.
+            graph_guid: The graph GUID. If not provided, uses client.graph_guid.
+
+        Returns:
+            List of VectorMetadataModel instances.
+        """
+        return super().retrieve_for_node(node_guid, tenant_guid, graph_guid)
+
+    @classmethod
+    def retrieve_edge_vectors(
+        cls,
+        edge_guid: str,
+        tenant_guid: str | None = None,
+        graph_guid: str | None = None,
+    ) -> list[VectorMetadataModel]:
+        """
+        Retrieve vectors for a specific edge.
+
+        Endpoint:
+            /v1.0/tenants/{tenant}/graphs/{graph}/edges/{edge}/vectors
+
+        Args:
+            edge_guid: The edge GUID.
+            tenant_guid: The tenant GUID. If not provided, uses client.tenant_guid.
+            graph_guid: The graph GUID. If not provided, uses client.graph_guid.
+
+        Returns:
+            List of VectorMetadataModel instances.
+        """
+        return super().retrieve_for_edge(edge_guid, tenant_guid, graph_guid)
+
+    @classmethod
+    def retrieve_graph_vectors(
+        cls,
+        tenant_guid: str | None = None,
+        graph_guid: str | None = None,
+        include_data: bool = False,
+        include_subordinates: bool = False,
+    ) -> list[VectorMetadataModel]:
+        """
+        Retrieve vectors for a specific graph.
+
+        Endpoint:
+            /v1.0/tenants/{tenant}/graphs/{graph}/vectors
+
+        Args:
+            tenant_guid: The tenant GUID. If not provided, uses client.tenant_guid.
+            graph_guid: The graph GUID. If not provided, uses client.graph_guid.
+            include_data: Whether to include data in the response.
+            include_subordinates: Whether to include subordinates in the response.
+
+        Returns:
+            List of VectorMetadataModel instances.
+        """
+        return super().retrieve_for_graph(
+            tenant_guid, graph_guid, include_data, include_subordinates
+        )
+
+    @classmethod
+    def delete_graph_vectors(
+        cls,
+        tenant_guid: str | None = None,
+        graph_guid: str | None = None,
+    ) -> None:
+        """
+        Delete vectors for a specific graph.
+
+        Endpoint:
+            /v1.0/tenants/{tenant}/graphs/{graph}/vectors
+
+        Args:
+            tenant_guid: The tenant GUID. If not provided, uses client.tenant_guid.
+            graph_guid: The graph GUID. If not provided, uses client.graph_guid.
+        """
+        return super().delete_for_graph(tenant_guid, graph_guid)
+
+    @classmethod
+    def delete_node_vectors(
+        cls,
+        node_guid: str,
+        tenant_guid: str | None = None,
+        graph_guid: str | None = None,
+    ) -> None:
+        """
+        Delete vectors for a specific node.
+
+        Endpoint:
+            /v1.0/tenants/{tenant}/graphs/{graph}/nodes/{node}/vectors
+
+        Args:
+            node_guid: The node GUID.
+            tenant_guid: The tenant GUID. If not provided, uses client.tenant_guid.
+            graph_guid: The graph GUID. If not provided, uses client.graph_guid.
+        """
+        return super().delete_for_node(node_guid, tenant_guid, graph_guid)
+
+    @classmethod
+    def delete_edge_vectors(
+        cls,
+        edge_guid: str,
+        tenant_guid: str | None = None,
+        graph_guid: str | None = None,
+    ) -> None:
+        """
+        Delete vectors for a specific edge.
+        """
+        return super().delete_for_edge(edge_guid, tenant_guid, graph_guid)

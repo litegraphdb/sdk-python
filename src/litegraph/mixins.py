@@ -10,7 +10,7 @@ from .exceptions import GRAPH_REQUIRED_ERROR, TENANT_REQUIRED_ERROR, SdkExceptio
 from .models.enumeration_query import EnumerationQueryModel
 from .models.enumeration_result import EnumerationResultModel
 from .sdk_logging import log_error
-from .utils.url_helper import _get_url_v1, _get_url_v2
+from .utils.url_helper import _get_url_base, _get_url_v1, _get_url_v2
 
 JSON_CONTENT_TYPE = {"Content-Type": "application/json"}
 
@@ -676,3 +676,567 @@ class RetrievableManyMixin:
             if cls.MODEL
             else instance
         )
+
+
+class RetrievableAllEndpointMixin:
+    """
+    Mixin class for retrieving all resources using the /all endpoint.
+    Provides methods for both tenant-level and graph-level retrieval.
+    """
+
+    RESOURCE_NAME: str = ""
+    MODEL: Optional[Type[BaseModel]] = None
+    REQUIRE_TENANT: bool = True
+    REQUIRE_GRAPH_GUID: bool = True
+
+    @classmethod
+    def retrieve_all_tenant(cls, tenant_guid: str | None = None) -> list["BaseModel"]:
+        """
+        Retrieve all resources for a tenant using the /all endpoint.
+
+        Endpoint:
+            /v1.0/tenants/{tenant}/{resource_name}/all
+
+        Args:
+            tenant_guid: The tenant GUID. If not provided, uses client.tenant_guid.
+
+        Returns:
+            List of resource instances validated against MODEL if defined.
+        """
+        client = get_client()
+
+        # Use provided tenant_guid or fall back to client.tenant_guid
+        tenant_guid = tenant_guid or client.tenant_guid
+
+        if cls.REQUIRE_TENANT and tenant_guid is None:
+            raise ValueError("Tenant GUID is required for this resource.")
+
+        # Build URL: v1.0/tenants/{tenant}/{resource_name}/all
+        # Manually construct URL to avoid graph_guid being inserted when REQUIRE_GRAPH_GUID is True
+        url = f"v1.0/tenants/{tenant_guid}/{cls.RESOURCE_NAME}/all"
+
+        instance = client.request("GET", url)
+
+        return (
+            [cls.MODEL.model_validate(item) for item in instance]
+            if getattr(cls, "MODEL", None)
+            else instance
+        )
+
+    @classmethod
+    def retrieve_all_graph(
+        cls, tenant_guid: str | None = None, graph_guid: str | None = None
+    ) -> list["BaseModel"]:
+        """
+        Retrieve all resources for a graph using the /all endpoint.
+
+        Endpoint:
+            /v1.0/tenants/{tenant}/graphs/{graph}/{resource_name}/all
+
+        Args:
+            tenant_guid: The tenant GUID. If not provided, uses client.tenant_guid.
+            graph_guid: The graph GUID. If not provided, uses client.graph_guid.
+
+        Returns:
+            List of resource instances validated against MODEL if defined.
+        """
+        client = get_client()
+
+        # Use provided values or fall back to client values
+        tenant_guid = tenant_guid or client.tenant_guid
+        graph_guid = graph_guid or client.graph_guid
+
+        if cls.REQUIRE_TENANT and tenant_guid is None:
+            raise ValueError(TENANT_REQUIRED_ERROR)
+        if cls.REQUIRE_GRAPH_GUID and not graph_guid:
+            raise ValueError(GRAPH_REQUIRED_ERROR)
+
+        # Build URL based on REQUIRE_GRAPH_GUID setting
+        if cls.REQUIRE_GRAPH_GUID:
+            # Use _get_url_v1 when REQUIRE_GRAPH_GUID is True
+            url = _get_url_v1(cls, tenant_guid, graph_guid, "all")
+        else:
+            # Manually construct URL when REQUIRE_GRAPH_GUID is False
+            # (can't use _get_url_v1 as it would place graph after resource name)
+            url = f"v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/{cls.RESOURCE_NAME}/all"
+
+        instance = client.request("GET", url)
+
+        return (
+            [cls.MODEL.model_validate(item) for item in instance]
+            if getattr(cls, "MODEL", None)
+            else instance
+        )
+
+    @classmethod
+    def retrieve_for_graph(
+        cls,
+        tenant_guid: str | None = None,
+        graph_guid: str | None = None,
+        include_data: bool = False,
+        include_subordinates: bool = False,
+    ) -> list["BaseModel"]:
+        """
+        Retrieve resources for a specific graph.
+
+        Endpoint:
+            /v1.0/tenants/{tenant}/graphs/{graph}/{resource_name}
+
+        Args:
+            tenant_guid: The tenant GUID. If not provided, uses client.tenant_guid.
+            graph_guid: The graph GUID. If not provided, uses client.graph_guid.
+            include_data: Whether to include data in the response.
+            include_subordinates: Whether to include subordinates in the response.
+
+        Returns:
+            List of resource instances validated against MODEL if defined.
+        """
+        client = get_client()
+
+        # Use provided values or fall back to client values
+        tenant_guid = tenant_guid or client.tenant_guid
+        graph_guid = graph_guid or client.graph_guid
+
+        if cls.REQUIRE_TENANT and tenant_guid is None:
+            raise ValueError(TENANT_REQUIRED_ERROR)
+        if not graph_guid:
+            raise ValueError(GRAPH_REQUIRED_ERROR)
+
+        # Build URL: v1.0/tenants/{tenant}/graphs/{graph}/{resource_name}
+        # Use a temporary class with REQUIRE_GRAPH_GUID=True to get correct URL structure
+        class _TempGraphClass:
+            RESOURCE_NAME = cls.RESOURCE_NAME
+            REQUIRE_TENANT = cls.REQUIRE_TENANT
+            REQUIRE_GRAPH_GUID = True
+
+        include = {}
+        if include_data:
+            include["incldata"] = None
+        if include_subordinates:
+            include["inclsub"] = None
+
+        url = _get_url_v1(_TempGraphClass, tenant_guid, graph_guid, **include)
+
+        instance = client.request("GET", url)
+
+        return (
+            [cls.MODEL.model_validate(item) for item in instance]
+            if getattr(cls, "MODEL", None)
+            else instance
+        )
+
+
+class DeletableAllEndpointMixin:
+    """
+    Mixin class for deleting all resources using the /all endpoint.
+    Provides methods for both tenant-level and graph-level deletion.
+    """
+
+    RESOURCE_NAME: str = ""
+    REQUIRE_TENANT: bool = True
+    REQUIRE_GRAPH_GUID: bool = True
+
+    @classmethod
+    def delete_all_tenant(cls, tenant_guid: str | None = None) -> None:
+        """
+        Delete all resources for a tenant using the /all endpoint.
+
+        Endpoint:
+            /v1.0/tenants/{tenant}/{resource_name}/all
+
+        Args:
+            tenant_guid: The tenant GUID.
+        """
+        client = get_client()
+
+        # Build URL: v1.0/tenants/{tenant}/{resource_name}/all
+        # Manually construct URL to avoid graph_guid being inserted when REQUIRE_GRAPH_GUID is True
+        tenant_guid = tenant_guid or client.tenant_guid
+        if cls.REQUIRE_TENANT and tenant_guid is None:
+            raise ValueError("Tenant GUID is required for this resource.")
+        url = f"v1.0/tenants/{tenant_guid}/{cls.RESOURCE_NAME}/all"
+
+        client.request("DELETE", url, headers=JSON_CONTENT_TYPE)
+
+    @classmethod
+    def delete_all_graph(
+        cls, tenant_guid: str | None = None, graph_guid: str | None = None
+    ) -> None:
+        """
+        Delete all resources for a graph using the /all endpoint.
+
+        Endpoint:
+            /v1.0/tenants/{tenant}/graphs/{graph}/{resource_name}/all
+
+        Args:
+            tenant_guid: The tenant GUID. If not provided, uses client.tenant_guid.
+            graph_guid: The graph GUID. If not provided, uses client.graph_guid.
+        """
+        client = get_client()
+
+        # Use provided values or fall back to client values
+        tenant_guid = tenant_guid or client.tenant_guid
+        graph_guid = graph_guid or client.graph_guid
+
+        if cls.REQUIRE_TENANT and tenant_guid is None:
+            raise ValueError(TENANT_REQUIRED_ERROR)
+        if cls.REQUIRE_GRAPH_GUID and not graph_guid:
+            raise ValueError(GRAPH_REQUIRED_ERROR)
+
+        # Build URL based on REQUIRE_GRAPH_GUID setting
+        if cls.REQUIRE_GRAPH_GUID:
+            # Use _get_url_v1 when REQUIRE_GRAPH_GUID is True
+            url = _get_url_v1(cls, tenant_guid, graph_guid, "all")
+        else:
+            # Manually construct URL when REQUIRE_GRAPH_GUID is False
+            # (can't use _get_url_v1 as it would place graph after resource name)
+            url = f"v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/{cls.RESOURCE_NAME}/all"
+
+        client.request("DELETE", url, headers=JSON_CONTENT_TYPE)
+
+    @classmethod
+    def delete_for_graph(
+        cls,
+        tenant_guid: str | None = None,
+        graph_guid: str | None = None,
+    ) -> None:
+        """
+        Delete resources for a specific graph.
+
+        Endpoint:
+            /v1.0/tenants/{tenant}/graphs/{graph}/{resource_name}
+
+        Args:
+            tenant_guid: The tenant GUID. If not provided, uses client.tenant_guid.
+            graph_guid: The graph GUID. If not provided, uses client.graph_guid.
+        """
+        client = get_client()
+
+        # Use provided values or fall back to client values
+        tenant_guid = tenant_guid or client.tenant_guid
+        graph_guid = graph_guid or client.graph_guid
+
+        if cls.REQUIRE_TENANT and tenant_guid is None:
+            raise ValueError(TENANT_REQUIRED_ERROR)
+        if not graph_guid:
+            raise ValueError(GRAPH_REQUIRED_ERROR)
+
+        # Build URL: v1.0/tenants/{tenant}/graphs/{graph}/{resource_name}
+        # Use a temporary class with REQUIRE_GRAPH_GUID=True to get correct URL structure
+        class _TempGraphClass:
+            RESOURCE_NAME = cls.RESOURCE_NAME
+            REQUIRE_TENANT = cls.REQUIRE_TENANT
+            REQUIRE_GRAPH_GUID = True
+
+        url = _get_url_v1(_TempGraphClass, tenant_guid, graph_guid)
+
+        client.request("DELETE", url, headers=JSON_CONTENT_TYPE)
+
+
+class RetrievableNodeResourceMixin:
+    """
+    Mixin class for retrieving resources associated with a specific node.
+    Provides method for retrieving node-specific resources.
+
+    Endpoint pattern:
+        /v1.0/tenants/{tenant}/graphs/{graph}/nodes/{node}/{resource_name}
+    """
+
+    RESOURCE_NAME: str = ""
+    MODEL: Optional[Type[BaseModel]] = None
+    REQUIRE_TENANT: bool = True
+    REQUIRE_GRAPH_GUID: bool = True
+
+    @classmethod
+    def retrieve_for_node(
+        cls,
+        node_guid: str,
+        tenant_guid: str | None = None,
+        graph_guid: str | None = None,
+    ) -> list["BaseModel"]:
+        """
+        Retrieve resources for a specific node.
+
+        Endpoint:
+            /v1.0/tenants/{tenant}/graphs/{graph}/nodes/{node}/{resource_name}
+
+        Args:
+            node_guid: The node GUID.
+            tenant_guid: The tenant GUID. If not provided, uses client.tenant_guid.
+            graph_guid: The graph GUID. If not provided, uses client.graph_guid.
+
+        Returns:
+            List of resource instances validated against MODEL if defined.
+        """
+        client = get_client()
+
+        # Use provided values or fall back to client values
+        tenant_guid = tenant_guid or client.tenant_guid
+        graph_guid = graph_guid or client.graph_guid
+
+        if cls.REQUIRE_TENANT and tenant_guid is None:
+            raise ValueError(TENANT_REQUIRED_ERROR)
+        if cls.REQUIRE_GRAPH_GUID and not graph_guid:
+            raise ValueError(GRAPH_REQUIRED_ERROR)
+
+        # Build URL: v1.0/tenants/{tenant}/graphs/{graph}/nodes/{node}/{resource_name}
+        # Use _get_url_base with a temporary class that has RESOURCE_NAME = "nodes"
+        # to build the tenant/graph/nodes part, then append the actual resource name
+        # Note: REQUIRE_GRAPH_GUID must be True to include graphs/{graph} in the path
+        class _TempNodeClass:
+            RESOURCE_NAME = "nodes"
+            REQUIRE_TENANT = cls.REQUIRE_TENANT
+            REQUIRE_GRAPH_GUID = (
+                True  # Always True for node endpoints (they require graph)
+            )
+
+        # Build base path: tenants/{tenant}/graphs/{graph}/nodes/{node}
+        base_path = _get_url_base(_TempNodeClass, tenant_guid, graph_guid, node_guid)
+        # Append the actual resource name
+        url = f"v1.0/{base_path}/{cls.RESOURCE_NAME}"
+
+        instance = client.request("GET", url)
+
+        return (
+            [cls.MODEL.model_validate(item) for item in instance]
+            if getattr(cls, "MODEL", None)
+            else instance
+        )
+
+
+class RetrievableEdgeResourceMixin:
+    """
+    Mixin class for retrieving resources associated with a specific edge.
+    Provides method for retrieving edge-specific resources.
+
+    Endpoint pattern:
+        /v1.0/tenants/{tenant}/graphs/{graph}/edges/{edge}/{resource_name}
+    """
+
+    RESOURCE_NAME: str = ""
+    MODEL: Optional[Type[BaseModel]] = None
+    REQUIRE_TENANT: bool = True
+    REQUIRE_GRAPH_GUID: bool = True
+
+    @classmethod
+    def retrieve_for_edge(
+        cls,
+        edge_guid: str,
+        tenant_guid: str | None = None,
+        graph_guid: str | None = None,
+    ) -> list["BaseModel"]:
+        """
+        Retrieve resources for a specific edge.
+
+        Endpoint:
+            /v1.0/tenants/{tenant}/graphs/{graph}/edges/{edge}/{resource_name}
+
+        Args:
+            edge_guid: The edge GUID.
+            tenant_guid: The tenant GUID. If not provided, uses client.tenant_guid.
+            graph_guid: The graph GUID. If not provided, uses client.graph_guid.
+
+        Returns:
+            List of resource instances validated against MODEL if defined.
+        """
+        client = get_client()
+
+        # Use provided values or fall back to client values
+        tenant_guid = tenant_guid or client.tenant_guid
+        graph_guid = graph_guid or client.graph_guid
+
+        if cls.REQUIRE_TENANT and tenant_guid is None:
+            raise ValueError(TENANT_REQUIRED_ERROR)
+        if cls.REQUIRE_GRAPH_GUID and not graph_guid:
+            raise ValueError(GRAPH_REQUIRED_ERROR)
+
+        # Build URL: v1.0/tenants/{tenant}/graphs/{graph}/edges/{edge}/{resource_name}
+        # Use _get_url_base with a temporary class that has RESOURCE_NAME = "edges"
+        # to build the tenant/graph/edges part, then append the actual resource name
+        # Note: REQUIRE_GRAPH_GUID must be True to include graphs/{graph} in the path
+        class _TempEdgeClass:
+            RESOURCE_NAME = "edges"
+            REQUIRE_TENANT = cls.REQUIRE_TENANT
+            REQUIRE_GRAPH_GUID = (
+                True  # Always True for edge endpoints (they require graph)
+            )
+
+        # Build base path: tenants/{tenant}/graphs/{graph}/edges/{edge}
+        base_path = _get_url_base(_TempEdgeClass, tenant_guid, graph_guid, edge_guid)
+        # Append the actual resource name
+        url = f"v1.0/{base_path}/{cls.RESOURCE_NAME}"
+
+        instance = client.request("GET", url)
+
+        return (
+            [cls.MODEL.model_validate(item) for item in instance]
+            if getattr(cls, "MODEL", None)
+            else instance
+        )
+
+
+class DeletableGraphResourceMixin:
+    """
+    Mixin class for deleting resources at the graph level.
+    Provides method for deleting graph-specific resources.
+
+    Endpoint pattern:
+        /v1.0/tenants/{tenant}/graphs/{graph}/{resource_name}
+    """
+
+    RESOURCE_NAME: str = ""
+    REQUIRE_TENANT: bool = True
+    REQUIRE_GRAPH_GUID: bool = True
+
+    @classmethod
+    def delete_for_graph(
+        cls, tenant_guid: str | None = None, graph_guid: str | None = None
+    ) -> None:
+        """
+        Delete resources for a specific graph.
+
+        Endpoint:
+            /v1.0/tenants/{tenant}/graphs/{graph}/{resource_name}
+
+        Args:
+            tenant_guid: The tenant GUID. If not provided, uses client.tenant_guid.
+            graph_guid: The graph GUID. If not provided, uses client.graph_guid.
+        """
+        client = get_client()
+
+        # Use provided values or fall back to client values
+        tenant_guid = tenant_guid or client.tenant_guid
+        graph_guid = graph_guid or client.graph_guid
+
+        if cls.REQUIRE_TENANT and tenant_guid is None:
+            raise ValueError(TENANT_REQUIRED_ERROR)
+        if cls.REQUIRE_GRAPH_GUID and not graph_guid:
+            raise ValueError(GRAPH_REQUIRED_ERROR)
+
+        # Build URL: v1.0/tenants/{tenant}/graphs/{graph}/{resource_name}
+        # Manually construct URL to ensure correct path structure
+        url = f"v1.0/tenants/{tenant_guid}/graphs/{graph_guid}/{cls.RESOURCE_NAME}"
+
+        client.request("DELETE", url, headers=JSON_CONTENT_TYPE)
+
+
+class DeletableNodeResourceMixin:
+    """
+    Mixin class for deleting resources associated with a specific node.
+    Provides method for deleting node-specific resources.
+
+    Endpoint pattern:
+        /v1.0/tenants/{tenant}/graphs/{graph}/nodes/{node}/{resource_name}
+    """
+
+    RESOURCE_NAME: str = ""
+    REQUIRE_TENANT: bool = True
+    REQUIRE_GRAPH_GUID: bool = True
+
+    @classmethod
+    def delete_for_node(
+        cls,
+        node_guid: str,
+        tenant_guid: str | None = None,
+        graph_guid: str | None = None,
+    ) -> None:
+        """
+        Delete resources for a specific node.
+
+        Endpoint:
+            /v1.0/tenants/{tenant}/graphs/{graph}/nodes/{node}/{resource_name}
+
+        Args:
+            node_guid: The node GUID.
+            tenant_guid: The tenant GUID. If not provided, uses client.tenant_guid.
+            graph_guid: The graph GUID. If not provided, uses client.graph_guid.
+        """
+        client = get_client()
+
+        # Use provided values or fall back to client values
+        tenant_guid = tenant_guid or client.tenant_guid
+        graph_guid = graph_guid or client.graph_guid
+
+        if cls.REQUIRE_TENANT and tenant_guid is None:
+            raise ValueError(TENANT_REQUIRED_ERROR)
+        if cls.REQUIRE_GRAPH_GUID and not graph_guid:
+            raise ValueError(GRAPH_REQUIRED_ERROR)
+
+        # Build URL: v1.0/tenants/{tenant}/graphs/{graph}/nodes/{node}/{resource_name}
+        # Use _get_url_base with a temporary class that has RESOURCE_NAME = "nodes"
+        # to build the tenant/graph/nodes part, then append the actual resource name
+        # Note: REQUIRE_GRAPH_GUID must be True to include graphs/{graph} in the path
+        class _TempNodeClass:
+            RESOURCE_NAME = "nodes"
+            REQUIRE_TENANT = cls.REQUIRE_TENANT
+            REQUIRE_GRAPH_GUID = (
+                True  # Always True for node endpoints (they require graph)
+            )
+
+        # Build base path: tenants/{tenant}/graphs/{graph}/nodes/{node}
+        base_path = _get_url_base(_TempNodeClass, tenant_guid, graph_guid, node_guid)
+        # Append the actual resource name
+        url = f"v1.0/{base_path}/{cls.RESOURCE_NAME}"
+
+        client.request("DELETE", url, headers=JSON_CONTENT_TYPE)
+
+
+class DeletableEdgeResourceMixin:
+    """
+    Mixin class for deleting resources associated with a specific edge.
+    Provides method for deleting edge-specific resources.
+
+    Endpoint pattern:
+        /v1.0/tenants/{tenant}/graphs/{graph}/edges/{edge}/{resource_name}
+    """
+
+    RESOURCE_NAME: str = ""
+    REQUIRE_TENANT: bool = True
+    REQUIRE_GRAPH_GUID: bool = True
+
+    @classmethod
+    def delete_for_edge(
+        cls,
+        edge_guid: str,
+        tenant_guid: str | None = None,
+        graph_guid: str | None = None,
+    ) -> None:
+        """
+        Delete resources for a specific edge.
+
+        Endpoint:
+            /v1.0/tenants/{tenant}/graphs/{graph}/edges/{edge}/{resource_name}
+
+        Args:
+            edge_guid: The edge GUID.
+            tenant_guid: The tenant GUID. If not provided, uses client.tenant_guid.
+            graph_guid: The graph GUID. If not provided, uses client.graph_guid.
+        """
+        client = get_client()
+
+        # Use provided values or fall back to client values
+        tenant_guid = tenant_guid or client.tenant_guid
+        graph_guid = graph_guid or client.graph_guid
+
+        if cls.REQUIRE_TENANT and tenant_guid is None:
+            raise ValueError(TENANT_REQUIRED_ERROR)
+        if cls.REQUIRE_GRAPH_GUID and not graph_guid:
+            raise ValueError(GRAPH_REQUIRED_ERROR)
+
+        # Build URL: v1.0/tenants/{tenant}/graphs/{graph}/edges/{edge}/{resource_name}
+        # Use _get_url_base with a temporary class that has RESOURCE_NAME = "edges"
+        # to build the tenant/graph/edges part, then append the actual resource name
+        # Note: REQUIRE_GRAPH_GUID must be True to include graphs/{graph} in the path
+        class _TempEdgeClass:
+            RESOURCE_NAME = "edges"
+            REQUIRE_TENANT = cls.REQUIRE_TENANT
+            REQUIRE_GRAPH_GUID = (
+                True  # Always True for edge endpoints (they require graph)
+            )
+
+        # Build base path: tenants/{tenant}/graphs/{graph}/edges/{edge}
+        base_path = _get_url_base(_TempEdgeClass, tenant_guid, graph_guid, edge_guid)
+        # Append the actual resource name
+        url = f"v1.0/{base_path}/{cls.RESOURCE_NAME}"
+
+        client.request("DELETE", url, headers=JSON_CONTENT_TYPE)

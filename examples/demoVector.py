@@ -3,6 +3,7 @@ import litegraph
 sdk = litegraph.configure(
     endpoint="http://YOUR_SERVER_URL_HERE:PORT",
     tenant_guid="00000000-0000-0000-0000-000000000000",
+    graph_guid="00000000-0000-0000-0000-000000000000",
     access_key="litegraphadmin",
 )
 
@@ -70,7 +71,7 @@ def update_vector():
     print(vector)
 
 
-update_vector()
+# update_vector()
 
 
 def delete_vector():
@@ -101,7 +102,7 @@ def enumerate_with_query_vector():
     print(vectors)
 
 
-enumerate_with_query_vector()
+# enumerate_with_query_vector()
 
 
 def create_multiple_vector():
@@ -130,7 +131,7 @@ def create_multiple_vector():
     print(vectors)
 
 
-create_multiple_vector()
+# create_multiple_vector()
 
 
 def delete_multiple_vector():
@@ -141,3 +142,94 @@ def delete_multiple_vector():
 
 
 # delete_multiple_vector()
+
+
+def delete_all_tenant_vectors():
+    litegraph.Vector.delete_all_tenant_vectors()
+    print("All tenant vectors deleted")
+
+
+# delete_all_tenant_vectors()
+
+
+def delete_all_graph_vectors():
+    litegraph.Vector.delete_all_graph_vectors(
+        tenant_guid="00000000-0000-0000-0000-000000000000",
+        graph_guid="00000000-0000-0000-0000-000000000000",
+    )
+    print("All graph vectors deleted")
+
+
+# delete_all_graph_vectors()
+
+
+def retrieve_all_tenant_vectors():
+    vectors = litegraph.Vector.retrieve_all_tenant_vectors()
+    print(vectors)
+
+
+# retrieve_all_tenant_vectors()
+
+
+def retrieve_all_graph_vectors():
+    vectors = litegraph.Vector.retrieve_all_graph_vectors()
+    print(vectors)
+
+
+# retrieve_all_graph_vectors()
+
+
+def retrieve_node_vectors():
+    vectors = litegraph.Vector.retrieve_node_vectors(
+        node_guid="b2eee912-31fe-4ca5-9807-214e9ceebcc3",
+    )
+    print(vectors)
+
+
+# retrieve_node_vectors()
+
+
+def retrieve_edge_vectors():
+    vectors = litegraph.Vector.retrieve_edge_vectors(
+        edge_guid="00000000-0000-0000-0000-000000000000",
+    )
+    print(vectors)
+
+
+# retrieve_edge_vectors()
+
+
+def retrieve_graph_vectors():
+    vectors = litegraph.Vector.retrieve_graph_vectors()
+    print(vectors)
+
+
+# retrieve_graph_vectors()
+
+
+def delete_graph_vectors():
+    litegraph.Vector.delete_graph_vectors()
+    print("Graph vectors deleted")
+
+
+# delete_graph_vectors()
+
+
+def delete_node_vectors():
+    litegraph.Vector.delete_node_vectors(
+        node_guid="b2eee912-31fe-4ca5-9807-214e9ceebcc3",
+    )
+    print("Node vectors deleted")
+
+
+# delete_node_vectors()
+
+
+def delete_edge_vectors():
+    litegraph.Vector.delete_edge_vectors(
+        edge_guid="00000000-0000-0000-0000-000000000000",
+    )
+    print("Edge vectors deleted")
+
+
+delete_edge_vectors()

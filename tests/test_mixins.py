@@ -22,6 +22,13 @@ from litegraph.mixins import (
     RetrievableStatisticsMixin,
     RetrievableFirstMixin,
     RetrievableManyMixin,
+    RetrievableNodeResourceMixin,
+    RetrievableEdgeResourceMixin,
+    RetrievableAllEndpointMixin,
+    DeletableNodeResourceMixin,
+    DeletableEdgeResourceMixin,
+    DeletableGraphResourceMixin,
+    DeletableAllEndpointMixin,
 )
 from pydantic import BaseModel
 from litegraph.exceptions import SdkException
@@ -468,7 +475,7 @@ def test_export_gexf_with_params(mock_client):
 def test_export_gexf_error_handling(mock_client):
     """Test error handling during GEXF export."""
     # Test with invalid UTF-8 response
-    mock_client.request.return_value = b'\x80invalid'
+    mock_client.request.return_value = b"\x80invalid"
 
     with pytest.raises(SdkException, match="Error exporting GEXF"):
         TestExportGexf.export_gexf("test-graph-id")
@@ -496,7 +503,7 @@ def test_exists_resource_exception_handling(mock_client):
 def test_create_resource_exception_handling(mock_client):
     """Test CreateableAPIResource exception handling."""
     test_data = {"id": "test-id", "name": "Test Resource"}
-    
+
     # Test when client.request raises an exception
     mock_client.request.side_effect = Exception("API Error")
     with pytest.raises(Exception, match="API Error"):
@@ -511,7 +518,7 @@ def test_create_resource_exception_handling(mock_client):
 def test_create_multiple_exception_handling(mock_client):
     """Test CreateableMultipleAPIResource exception handling."""
     test_data = [{"id": "test-id-1"}, {"id": "test-id-2"}]
-    
+
     # Test when client.request raises an exception
     mock_client.request.side_effect = Exception("Bulk creation failed")
     with pytest.raises(Exception, match="Bulk creation failed"):
@@ -539,7 +546,7 @@ def test_retrieve_resource_exception_handling(mock_client):
 def test_update_resource_exception_handling(mock_client):
     """Test UpdatableAPIResource exception handling."""
     test_data = {"id": "test-id", "name": "Updated Resource"}
-    
+
     # Test when client.request raises an exception
     mock_client.request.side_effect = Exception("Update failed")
     with pytest.raises(Exception, match="Update failed"):
@@ -567,7 +574,7 @@ def test_delete_resource_exception_handling(mock_client):
 def test_delete_multiple_exception_handling(mock_client):
     """Test DeleteMultipleAPIResource exception handling."""
     resource_ids = ["test-id-1", "test-id-2"]
-    
+
     # Test when client.request raises an exception
     mock_client.request.side_effect = Exception("Bulk delete failed")
     with pytest.raises(Exception, match="Bulk delete failed"):
@@ -583,7 +590,7 @@ def test_delete_all_exception_handling(mock_client):
     """Test DeleteAllAPIResource exception handling."""
     valid_uuid = "550e8400-e29b-41d4-a716-446655440000"
     mock_client.graph_guid = valid_uuid
-    
+
     # Test when client.request raises an exception
     mock_client.request.side_effect = Exception("Delete all failed")
     with pytest.raises(Exception, match="Delete all failed"):
@@ -611,7 +618,7 @@ def test_retrieve_all_exception_handling(mock_client):
 def test_search_exception_handling(mock_client):
     """Test SearchableAPIResource exception handling."""
     search_params = {"query": "test"}
-    
+
     # Test when client.request raises an exception
     mock_client.request.side_effect = Exception("Search failed")
     with pytest.raises(Exception, match="Search failed"):
@@ -701,7 +708,9 @@ def test_retrieve_with_include_parameters(mock_client):
     assert isinstance(result, MockModel)
 
     # Test retrieval with both include parameters
-    result = ResourceModel.retrieve("test-id", include_data=True, include_subordinates=True)
+    result = ResourceModel.retrieve(
+        "test-id", include_data=True, include_subordinates=True
+    )
     assert isinstance(result, MockModel)
 
 
@@ -734,15 +743,24 @@ def test_search_with_include_parameters(mock_client):
     mock_client.request.side_effect = None
 
     # Test search with include_data
-    result = ResourceModel.search(graph_id="test-graph", query="test", include_data=True)
+    result = ResourceModel.search(
+        graph_id="test-graph", query="test", include_data=True
+    )
     assert isinstance(result, MockResponseModel)
 
     # Test search with include_subordinates
-    result = ResourceModel.search(graph_id="test-graph", query="test", include_subordinates=True)
+    result = ResourceModel.search(
+        graph_id="test-graph", query="test", include_subordinates=True
+    )
     assert isinstance(result, MockResponseModel)
 
     # Test search with both include parameters
-    result = ResourceModel.search(graph_id="test-graph", query="test", include_data=True, include_subordinates=True)
+    result = ResourceModel.search(
+        graph_id="test-graph",
+        query="test",
+        include_data=True,
+        include_subordinates=True,
+    )
     assert isinstance(result, MockResponseModel)
 
 
@@ -854,54 +872,54 @@ def test_tenant_required_error_coverage(mock_client):
 #     """Test graph GUID required error coverage for mixins that require it."""
 #     # Set graph_guid to None to trigger GRAPH_REQUIRED_ERROR
 #     mock_client.graph_guid = None
-    
+
 #     # Test CreateableAPIResource
 #     test_data = {"id": "test-id", "name": "Test Resource"}
 #     with pytest.raises(ValueError, match="Graph GUID is required for this resource"):
 #         ResourceModel.create(**test_data)
-    
+
 #     # Test CreateableMultipleAPIResource - this doesn't validate graph_guid the same way
 #     # It only uses it for URL construction, so we need to mock the response
 #     test_data_list = [{"id": "test-id-1"}, {"id": "test-id-2"}]
 #     mock_client.request.return_value = [{"id": "test-id-1"}, {"id": "test-id-2"}]
-    
+
 #     result = ResourceModel.create_multiple(test_data_list)
 #     assert isinstance(result, list)
 #     assert len(result) == 2
 #     assert all(isinstance(item, MockModel) for item in result)
-    
+
 #     # Test RetrievableAPIResource
 #     with pytest.raises(ValueError, match="Graph GUID is required for this resource"):
 #         ResourceModel.retrieve("test-id")
-    
+
 #     # Test UpdatableAPIResource
 #     with pytest.raises(ValueError, match="Graph GUID is required for this resource"):
 #         ResourceModel.update("test-id", **test_data)
-    
+
 #     # Test DeletableAPIResource
 #     with pytest.raises(ValueError, match="Graph GUID is required for this resource"):
 #         ResourceModel.delete("test-id")
-    
+
 #     # Test DeleteMultipleAPIResource
 #     with pytest.raises(ValueError, match="Graph GUID is required for this resource"):
 #         ResourceModel.delete_multiple(["test-id-1", "test-id-2"])
-    
+
 #     # Test DeleteAllAPIResource
 #     with pytest.raises(ValueError, match="badly formed hexadecimal UUID string"):
 #         ResourceModel.delete_all()
-    
+
 #     # Test AllRetrievableAPIResource
 #     with pytest.raises(ValueError, match="Graph GUID is required for this resource"):
 #         ResourceModel.retrieve_all()
-    
+
 #     # Test SearchableAPIResource
 #     with pytest.raises(ValueError, match="Graph GUID is required for this resource"):
 #         ResourceModel.search("test-graph-id")
-    
+
 #     # Test RetrievableFirstMixin
 #     with pytest.raises(ValueError, match="Graph GUID is required for this resource"):
 #         ResourceModel.retrieve_first("test-graph-id")
-    
+
 #     # Test RetrievableManyMixin
 #     with pytest.raises(ValueError, match="Graph GUID is required for this resource"):
 #         ResourceModel.retrieve_many(["test-id-1", "test-id-2"], "test-graph-id")
@@ -909,8 +927,11 @@ def test_tenant_required_error_coverage(mock_client):
 
 def test_tenant_not_required_mixins(mock_client):
     """Test mixins that don't require tenant GUID."""
+
     # Create a resource class that doesn't require tenant
-    class ResourceNoTenant(TestBaseResource, CreateableAPIResource, RetrievableAPIResource):
+    class ResourceNoTenant(
+        TestBaseResource, CreateableAPIResource, RetrievableAPIResource
+    ):
         REQUIRE_TENANT = False
         REQUIRE_GRAPH_GUID = False
 
@@ -934,8 +955,11 @@ def test_tenant_not_required_mixins(mock_client):
 
 def test_graph_guid_not_required_mixins(mock_client):
     """Test mixins that don't require graph GUID."""
+
     # Create a resource class that doesn't require graph GUID
-    class ResourceNoGraph(TestBaseResource, CreateableAPIResource, RetrievableAPIResource):
+    class ResourceNoGraph(
+        TestBaseResource, CreateableAPIResource, RetrievableAPIResource
+    ):
         REQUIRE_GRAPH_GUID = False
 
     # Set graph_guid to None
@@ -983,72 +1007,74 @@ def test_tenant_guid_validation_edge_cases(mock_client):
     """Test tenant GUID validation edge cases."""
     # Test with None tenant_guid (should raise ValueError)
     mock_client.tenant_guid = None
-    
+
     test_data = {"id": "test-id", "name": "Test Resource"}
-    
+
     # Test CreateableAPIResource with None tenant_guid
     with pytest.raises(ValueError, match="Tenant GUID is required for this resource"):
         ResourceModel.create(**test_data)
-    
+
     # Test with valid tenant_guid
     mock_client.tenant_guid = "valid-tenant-guid"
     mock_client.request.return_value = {"id": "test-id", "name": "Test Resource"}
-    
+
     result = ResourceModel.create(**test_data)
     assert isinstance(result, MockModel)
 
 
 def test_enumerable_api_resource_with_data_coverage(mock_client):
     """Test EnumerableAPIResourceWithData coverage for missing blocks."""
+
     # Test with REQUIRE_TENANT = False
     class ResourceWithoutTenant(TestBaseResource, EnumerableAPIResourceWithData):
         REQUIRE_TENANT = False
         MODEL = MockModel
-        ENUMERABLE_REQUEST_MODEL = MockModel  # Use MockModel instead of EnumerationQueryModel
-    
+        ENUMERABLE_REQUEST_MODEL = (
+            MockModel  # Use MockModel instead of EnumerationQueryModel
+        )
+
     mock_client.request.return_value = {"items": [], "total": 0}
-    
+
     # Pass required field 'id' for MockModel
     result = ResourceWithoutTenant.enumerate_with_query(id="test-id")
     assert result
-    
+
     # Test with MODEL = None
     class ResourceWithoutModel(TestBaseResource, EnumerableAPIResourceWithData):
         REQUIRE_TENANT = False
         MODEL = None
         ENUMERABLE_REQUEST_MODEL = MockModel
-    
+
     result = ResourceWithoutModel.enumerate_with_query(id="test-id")
     assert result
-    
+
     # Test with include_data and include_subordinates (provide them as True)
     result = ResourceWithoutTenant.enumerate_with_query(
-        id="test-id",
-        include_data=True, 
-        include_subordinates=True
+        id="test-id", include_data=True, include_subordinates=True
     )
     assert result
 
 
 def test_retrievable_statistics_mixin_coverage(mock_client):
     """Test RetrievableStatisticsMixin coverage for missing blocks."""
+
     # Test with REQUIRE_TENANT = False
     class ResourceWithoutTenant(TestBaseResource, RetrievableStatisticsMixin):
         REQUIRE_TENANT = False
-    
+
     mock_client.request.return_value = {"stats": "data"}
-    
+
     result = ResourceWithoutTenant.retrieve_statistics("test-guid")
     assert result == {"stats": "data"}
-    
+
     # Test without resource_guid
     result = ResourceWithoutTenant.retrieve_statistics()
     assert result == {"stats": "data"}
-    
+
     # Test with REQUIRE_TENANT = True but valid tenant
     class ResourceWithTenant(TestBaseResource, RetrievableStatisticsMixin):
         REQUIRE_TENANT = True
-    
+
     mock_client.tenant_guid = "valid-tenant"
     result = ResourceWithTenant.retrieve_statistics("test-guid")
     assert result == {"stats": "data"}
@@ -1056,19 +1082,20 @@ def test_retrievable_statistics_mixin_coverage(mock_client):
 
 def test_export_gexf_mixin_coverage(mock_client):
     """Test ExportGexfMixin coverage for missing blocks."""
+
     # Test with REQUIRE_TENANT = False
     class ResourceWithoutTenant(TestBaseResource, ExportGexfMixin):
         REQUIRE_TENANT = False
-    
+
     mock_client.request.return_value = b"gexf content"
-    
+
     result = ResourceWithoutTenant.export_gexf("test-graph-id")
     assert result == "gexf content"
-    
+
     # Test with REQUIRE_TENANT = True but valid tenant
     class ResourceWithTenant(TestBaseResource, ExportGexfMixin):
         REQUIRE_TENANT = True
-    
+
     mock_client.tenant_guid = "valid-tenant"
     result = ResourceWithTenant.export_gexf("test-graph-id")
     assert result == "gexf content"
@@ -1078,7 +1105,7 @@ def test_enumerable_api_resource_coverage(mock_client):
     class ResourceWithoutTenant(TestBaseResource, EnumerableAPIResource):
         REQUIRE_TENANT = False
         MODEL = MockModel
-    
+
     mock_client.request.return_value = {
         "Objects": [
             {
@@ -1101,22 +1128,22 @@ def test_enumerable_api_resource_coverage(mock_client):
         "EndOfResults": True,
         "RecordsRemaining": 0,
     }
-    
+
     result = ResourceWithoutTenant.enumerate()
     result_dict = result.model_dump()
     assert len(result_dict["objects"]) == 1
     assert result_dict["total_records"] == 1
     assert result_dict["success"] is True
-    
+
     class ResourceWithoutModel(TestBaseResource, EnumerableAPIResource):
         REQUIRE_TENANT = False
         MODEL = None
-    
+
     mock_client.request.return_value = {"items": [], "total": 0}
-    
+
     result = ResourceWithoutModel.enumerate()
     assert result == {"items": [], "total": 0}
-    
+
     result = ResourceWithoutTenant.enumerate(
         include_data=True,
         include_subordinates=True,
@@ -1127,56 +1154,54 @@ def test_enumerable_api_resource_coverage(mock_client):
 
 def test_retrievable_first_mixin_coverage(mock_client):
     """Test RetrievableFirstMixin coverage for missing blocks."""
+
     # Test with REQUIRE_TENANT = False
     class ResourceWithoutTenant(TestBaseResource, RetrievableFirstMixin):
         REQUIRE_TENANT = False
         REQUIRE_GRAPH_GUID = True
         MODEL = MockModel
         SEARCH_MODELS = (MockModel, MockModel)
-    
+
     mock_client.request.return_value = {"id": "test-id", "name": "Test Resource"}
-    
+
     # Pass required field 'id' for MockModel
     result = ResourceWithoutTenant.retrieve_first("test-graph-id", id="test-id")
     assert isinstance(result, MockModel)
     assert result.id == "test-id"
-    
+
     # Test without graph_id (should use else URL path)
     result = ResourceWithoutTenant.retrieve_first(id="test-id")
     assert isinstance(result, MockModel)
     assert result.id == "test-id"
-    
+
     # Test with MODEL = None
     class ResourceWithoutModel(TestBaseResource, RetrievableFirstMixin):
         REQUIRE_TENANT = False
         REQUIRE_GRAPH_GUID = True
         MODEL = None
         SEARCH_MODELS = (MockModel, MockModel)
-    
+
     result = ResourceWithoutModel.retrieve_first("test-graph-id", id="test-id")
     assert result == {"id": "test-id", "name": "Test Resource"}
-    
+
     # Test with include_data and include_subordinates (provide them as True)
     result = ResourceWithoutTenant.retrieve_first(
-        "test-graph-id",
-        id="test-id",
-        include_data=True,
-        include_subordinates=True
+        "test-graph-id", id="test-id", include_data=True, include_subordinates=True
     )
     assert isinstance(result, MockModel)
     assert result.id == "test-id"
-    
+
     # Test with REQUIRE_GRAPH_GUID = False
     class ResourceWithoutGraphGuid(TestBaseResource, RetrievableFirstMixin):
         REQUIRE_TENANT = False
         REQUIRE_GRAPH_GUID = False
         MODEL = MockModel
         SEARCH_MODELS = (MockModel, MockModel)
-    
+
     result = ResourceWithoutGraphGuid.retrieve_first("test-graph-id", id="test-id")
     assert isinstance(result, MockModel)
     assert result.id == "test-id"
-    
+
     # Test without graph_id when REQUIRE_GRAPH_GUID = False
     result = ResourceWithoutGraphGuid.retrieve_first(id="test-id")
     assert isinstance(result, MockModel)
@@ -1185,47 +1210,682 @@ def test_retrievable_first_mixin_coverage(mock_client):
 
 def test_retrievable_many_mixin_coverage(mock_client):
     """Test RetrievableManyMixin coverage for missing blocks."""
+
     # Test with REQUIRE_TENANT = False
     class ResourceWithoutTenant(TestBaseResource, RetrievableManyMixin):
         REQUIRE_TENANT = False
         REQUIRE_GRAPH_GUID = True
         MODEL = MockModel
-    
+
     mock_client.request.return_value = [
         {"id": "test-id-1", "name": "Test Resource 1"},
-        {"id": "test-id-2", "name": "Test Resource 2"}
+        {"id": "test-id-2", "name": "Test Resource 2"},
     ]
-    
+
     # Test with graph_guid (should use first URL path)
-    result = ResourceWithoutTenant.retrieve_many(["test-id-1", "test-id-2"], "test-graph-guid")
+    result = ResourceWithoutTenant.retrieve_many(
+        ["test-id-1", "test-id-2"], "test-graph-guid"
+    )
     assert isinstance(result, list)
     assert len(result) == 2
     assert all(isinstance(item, MockModel) for item in result)
-    
+
     # Test without graph_guid (should use else URL path)
     result = ResourceWithoutTenant.retrieve_many(["test-id-1", "test-id-2"])
     assert isinstance(result, list)
     assert len(result) == 2
     assert all(isinstance(item, MockModel) for item in result)
-    
+
     # Test with MODEL = None
     class ResourceWithoutModel(TestBaseResource, RetrievableManyMixin):
         REQUIRE_TENANT = False
         REQUIRE_GRAPH_GUID = True
         MODEL = None
-    
-    result = ResourceWithoutModel.retrieve_many(["test-id-1", "test-id-2"], "test-graph-guid")
+
+    result = ResourceWithoutModel.retrieve_many(
+        ["test-id-1", "test-id-2"], "test-graph-guid"
+    )
     assert isinstance(result, list)
     assert len(result) == 2
     assert all(isinstance(item, dict) for item in result)
-    
+
     # Test with REQUIRE_GRAPH_GUID = False
     class ResourceWithoutGraphGuid(TestBaseResource, RetrievableManyMixin):
         REQUIRE_TENANT = False
         REQUIRE_GRAPH_GUID = False
         MODEL = MockModel
-    
-    result = ResourceWithoutGraphGuid.retrieve_many(["test-id-1", "test-id-2"], "test-graph-guid")
+
+    result = ResourceWithoutGraphGuid.retrieve_many(
+        ["test-id-1", "test-id-2"], "test-graph-guid"
+    )
     assert isinstance(result, list)
     assert len(result) == 2
     assert all(isinstance(item, MockModel) for item in result)
+
+
+def test_retrievable_node_resource_mixin(mock_client):
+    """Test RetrievableNodeResourceMixin."""
+
+    class TestNodeResource(TestBaseResource, RetrievableNodeResourceMixin):
+        RESOURCE_NAME = "tags"
+        MODEL = MockModel
+        REQUIRE_TENANT = True
+        REQUIRE_GRAPH_GUID = True
+
+    # Test successful retrieval
+    test_data = [
+        {"id": "tag-1", "name": "Tag 1"},
+        {"id": "tag-2", "name": "Tag 2"},
+    ]
+    mock_client.request.return_value = test_data
+    mock_client.request.side_effect = None
+
+    result = TestNodeResource.retrieve_for_node("node-guid-123")
+    assert isinstance(result, list)
+    assert len(result) == 2
+    assert all(isinstance(item, MockModel) for item in result)
+    assert result[0].id == "tag-1"
+    assert result[1].id == "tag-2"
+
+    # Verify the request was made correctly
+    mock_client.request.assert_called_once()
+    called_args = mock_client.request.call_args
+    assert called_args[0][0] == "GET"
+    assert "nodes/node-guid-123/tags" in called_args[0][1]
+
+    # Test with explicit tenant_guid and graph_guid
+    mock_client.request.reset_mock()
+    mock_client.request.return_value = test_data
+    result = TestNodeResource.retrieve_for_node(
+        "node-guid-123", tenant_guid="explicit-tenant", graph_guid="explicit-graph"
+    )
+    assert isinstance(result, list)
+    assert len(result) == 2
+
+    # Test without tenant_guid when required
+    mock_client.tenant_guid = None
+    with pytest.raises(ValueError, match="Tenant GUID is required for this resource"):
+        TestNodeResource.retrieve_for_node("node-guid-123")
+
+    # Test without graph_guid when required
+    mock_client.tenant_guid = "test-tenant-guid"
+    mock_client.graph_guid = None
+    with pytest.raises(ValueError, match="Graph GUID is required for this resource"):
+        TestNodeResource.retrieve_for_node("node-guid-123")
+
+    # Test with empty graph_guid
+    mock_client.graph_guid = ""
+    with pytest.raises(ValueError, match="Graph GUID is required for this resource"):
+        TestNodeResource.retrieve_for_node("node-guid-123")
+
+    # Test with MODEL = None (should return raw data)
+    class TestNodeResourceNoModel(TestBaseResource, RetrievableNodeResourceMixin):
+        RESOURCE_NAME = "tags"
+        MODEL = None
+        REQUIRE_TENANT = True
+        REQUIRE_GRAPH_GUID = True
+
+    mock_client.graph_guid = "test-graph-guid"
+    mock_client.request.return_value = test_data
+    result = TestNodeResourceNoModel.retrieve_for_node("node-guid-123")
+    assert result == test_data
+
+    # Test with REQUIRE_TENANT = False
+    class TestNodeResourceNoTenant(TestBaseResource, RetrievableNodeResourceMixin):
+        RESOURCE_NAME = "tags"
+        MODEL = MockModel
+        REQUIRE_TENANT = False
+        REQUIRE_GRAPH_GUID = True
+
+    mock_client.tenant_guid = None
+    mock_client.graph_guid = "test-graph-guid"
+    mock_client.request.return_value = test_data
+    result = TestNodeResourceNoTenant.retrieve_for_node("node-guid-123")
+    assert isinstance(result, list)
+    assert len(result) == 2
+
+
+def test_retrievable_edge_resource_mixin(mock_client):
+    """Test RetrievableEdgeResourceMixin."""
+
+    class TestEdgeResource(TestBaseResource, RetrievableEdgeResourceMixin):
+        RESOURCE_NAME = "tags"
+        MODEL = MockModel
+        REQUIRE_TENANT = True
+        REQUIRE_GRAPH_GUID = True
+
+    # Test successful retrieval
+    test_data = [
+        {"id": "tag-1", "name": "Tag 1"},
+        {"id": "tag-2", "name": "Tag 2"},
+    ]
+    mock_client.request.return_value = test_data
+    mock_client.request.side_effect = None
+
+    result = TestEdgeResource.retrieve_for_edge("edge-guid-123")
+    assert isinstance(result, list)
+    assert len(result) == 2
+    assert all(isinstance(item, MockModel) for item in result)
+    assert result[0].id == "tag-1"
+    assert result[1].id == "tag-2"
+
+    # Verify the request was made correctly
+    mock_client.request.assert_called_once()
+    called_args = mock_client.request.call_args
+    assert called_args[0][0] == "GET"
+    assert "edges/edge-guid-123/tags" in called_args[0][1]
+
+    # Test with explicit tenant_guid and graph_guid
+    mock_client.request.reset_mock()
+    mock_client.request.return_value = test_data
+    result = TestEdgeResource.retrieve_for_edge(
+        "edge-guid-123", tenant_guid="explicit-tenant", graph_guid="explicit-graph"
+    )
+    assert isinstance(result, list)
+    assert len(result) == 2
+
+    # Test without tenant_guid when required
+    mock_client.tenant_guid = None
+    with pytest.raises(ValueError, match="Tenant GUID is required for this resource"):
+        TestEdgeResource.retrieve_for_edge("edge-guid-123")
+
+    # Test without graph_guid when required
+    mock_client.tenant_guid = "test-tenant-guid"
+    mock_client.graph_guid = None
+    with pytest.raises(ValueError, match="Graph GUID is required for this resource"):
+        TestEdgeResource.retrieve_for_edge("edge-guid-123")
+
+    # Test with empty graph_guid
+    mock_client.graph_guid = ""
+    with pytest.raises(ValueError, match="Graph GUID is required for this resource"):
+        TestEdgeResource.retrieve_for_edge("edge-guid-123")
+
+    # Test with MODEL = None (should return raw data)
+    class TestEdgeResourceNoModel(TestBaseResource, RetrievableEdgeResourceMixin):
+        RESOURCE_NAME = "tags"
+        MODEL = None
+        REQUIRE_TENANT = True
+        REQUIRE_GRAPH_GUID = True
+
+    mock_client.graph_guid = "test-graph-guid"
+    mock_client.request.return_value = test_data
+    result = TestEdgeResourceNoModel.retrieve_for_edge("edge-guid-123")
+    assert result == test_data
+
+    # Test with REQUIRE_TENANT = False
+    class TestEdgeResourceNoTenant(TestBaseResource, RetrievableEdgeResourceMixin):
+        RESOURCE_NAME = "tags"
+        MODEL = MockModel
+        REQUIRE_TENANT = False
+        REQUIRE_GRAPH_GUID = True
+
+    mock_client.tenant_guid = None
+    mock_client.graph_guid = "test-graph-guid"
+    mock_client.request.return_value = test_data
+    result = TestEdgeResourceNoTenant.retrieve_for_edge("edge-guid-123")
+    assert isinstance(result, list)
+    assert len(result) == 2
+
+
+def test_retrievable_all_endpoint_mixin_retrieve_for_graph(mock_client):
+    """Test RetrievableAllEndpointMixin.retrieve_for_graph method."""
+
+    class TestGraphResource(TestBaseResource, RetrievableAllEndpointMixin):
+        RESOURCE_NAME = "vectors"
+        MODEL = MockModel
+        REQUIRE_TENANT = True
+        REQUIRE_GRAPH_GUID = True
+
+    # Test successful retrieval
+    test_data = [
+        {"id": "vector-1", "name": "Vector 1"},
+        {"id": "vector-2", "name": "Vector 2"},
+    ]
+    mock_client.request.return_value = test_data
+    mock_client.request.side_effect = None
+
+    result = TestGraphResource.retrieve_for_graph()
+    assert isinstance(result, list)
+    assert len(result) == 2
+    assert all(isinstance(item, MockModel) for item in result)
+    assert result[0].id == "vector-1"
+    assert result[1].id == "vector-2"
+
+    # Test with explicit tenant_guid and graph_guid
+    mock_client.request.reset_mock()
+    mock_client.request.return_value = test_data
+    result = TestGraphResource.retrieve_for_graph(
+        tenant_guid="explicit-tenant", graph_guid="explicit-graph"
+    )
+    assert isinstance(result, list)
+    assert len(result) == 2
+
+    # Test with include_data
+    mock_client.request.reset_mock()
+    mock_client.request.return_value = test_data
+    result = TestGraphResource.retrieve_for_graph(include_data=True)
+    assert isinstance(result, list)
+    called_args = mock_client.request.call_args
+    assert "incldata" in called_args[0][1] or "incldata" in str(called_args)
+
+    # Test with include_subordinates
+    mock_client.request.reset_mock()
+    mock_client.request.return_value = test_data
+    result = TestGraphResource.retrieve_for_graph(include_subordinates=True)
+    assert isinstance(result, list)
+
+    # Test with both include parameters
+    mock_client.request.reset_mock()
+    mock_client.request.return_value = test_data
+    result = TestGraphResource.retrieve_for_graph(
+        include_data=True, include_subordinates=True
+    )
+    assert isinstance(result, list)
+
+    # Test without tenant_guid when required
+    mock_client.tenant_guid = None
+    with pytest.raises(ValueError, match="Tenant GUID is required for this resource"):
+        TestGraphResource.retrieve_for_graph()
+
+    # Test without graph_guid when required
+    mock_client.tenant_guid = "test-tenant-guid"
+    mock_client.graph_guid = None
+    with pytest.raises(ValueError, match="Graph GUID is required for this resource"):
+        TestGraphResource.retrieve_for_graph()
+
+    # Test with empty graph_guid
+    mock_client.graph_guid = ""
+    with pytest.raises(ValueError, match="Graph GUID is required for this resource"):
+        TestGraphResource.retrieve_for_graph()
+
+    # Test with MODEL = None (should return raw data)
+    class TestGraphResourceNoModel(TestBaseResource, RetrievableAllEndpointMixin):
+        RESOURCE_NAME = "vectors"
+        MODEL = None
+        REQUIRE_TENANT = True
+        REQUIRE_GRAPH_GUID = True
+
+    mock_client.graph_guid = "test-graph-guid"
+    mock_client.request.return_value = test_data
+    result = TestGraphResourceNoModel.retrieve_for_graph()
+    assert result == test_data
+
+    # Test with REQUIRE_TENANT = False
+    class TestGraphResourceNoTenant(TestBaseResource, RetrievableAllEndpointMixin):
+        RESOURCE_NAME = "vectors"
+        MODEL = MockModel
+        REQUIRE_TENANT = False
+        REQUIRE_GRAPH_GUID = True
+
+    mock_client.tenant_guid = None
+    mock_client.graph_guid = "test-graph-guid"
+    mock_client.request.return_value = test_data
+    result = TestGraphResourceNoTenant.retrieve_for_graph()
+    assert isinstance(result, list)
+    assert len(result) == 2
+
+
+def test_deletable_node_resource_mixin(mock_client):
+    """Test DeletableNodeResourceMixin."""
+
+    class TestNodeResource(TestBaseResource, DeletableNodeResourceMixin):
+        RESOURCE_NAME = "tags"
+        REQUIRE_TENANT = True
+        REQUIRE_GRAPH_GUID = True
+
+    # Test successful deletion
+    mock_client.request.side_effect = None
+    TestNodeResource.delete_for_node("node-guid-123")
+    mock_client.request.assert_called_once()
+    called_args = mock_client.request.call_args
+    assert called_args[0][0] == "DELETE"
+    assert "nodes/node-guid-123/tags" in called_args[0][1]
+    assert called_args[1]["headers"] == {"Content-Type": "application/json"}
+
+    # Test with explicit tenant_guid and graph_guid
+    mock_client.request.reset_mock()
+    TestNodeResource.delete_for_node(
+        "node-guid-123", tenant_guid="explicit-tenant", graph_guid="explicit-graph"
+    )
+    mock_client.request.assert_called_once()
+    called_args = mock_client.request.call_args
+    assert called_args[0][0] == "DELETE"
+    assert "nodes/node-guid-123/tags" in called_args[0][1]
+
+    # Test without tenant_guid when required
+    mock_client.tenant_guid = None
+    with pytest.raises(ValueError, match="Tenant GUID is required for this resource"):
+        TestNodeResource.delete_for_node("node-guid-123")
+
+    # Test without graph_guid when required
+    mock_client.tenant_guid = "test-tenant-guid"
+    mock_client.graph_guid = None
+    with pytest.raises(ValueError, match="Graph GUID is required for this resource"):
+        TestNodeResource.delete_for_node("node-guid-123")
+
+    # Test with empty graph_guid
+    mock_client.graph_guid = ""
+    with pytest.raises(ValueError, match="Graph GUID is required for this resource"):
+        TestNodeResource.delete_for_node("node-guid-123")
+
+    # Test with REQUIRE_TENANT = False
+    class TestNodeResourceNoTenant(TestBaseResource, DeletableNodeResourceMixin):
+        RESOURCE_NAME = "tags"
+        REQUIRE_TENANT = False
+        REQUIRE_GRAPH_GUID = True
+
+    mock_client.tenant_guid = None
+    mock_client.graph_guid = "test-graph-guid"
+    mock_client.request.reset_mock()
+    TestNodeResourceNoTenant.delete_for_node("node-guid-123")
+    mock_client.request.assert_called_once()
+    assert mock_client.request.call_args[0][0] == "DELETE"
+
+
+def test_deletable_edge_resource_mixin(mock_client):
+    """Test DeletableEdgeResourceMixin."""
+
+    class TestEdgeResource(TestBaseResource, DeletableEdgeResourceMixin):
+        RESOURCE_NAME = "tags"
+        REQUIRE_TENANT = True
+        REQUIRE_GRAPH_GUID = True
+
+    # Test successful deletion
+    mock_client.request.side_effect = None
+    TestEdgeResource.delete_for_edge("edge-guid-123")
+    mock_client.request.assert_called_once()
+    called_args = mock_client.request.call_args
+    assert called_args[0][0] == "DELETE"
+    assert "edges/edge-guid-123/tags" in called_args[0][1]
+    assert called_args[1]["headers"] == {"Content-Type": "application/json"}
+
+    # Test with explicit tenant_guid and graph_guid
+    mock_client.request.reset_mock()
+    TestEdgeResource.delete_for_edge(
+        "edge-guid-123", tenant_guid="explicit-tenant", graph_guid="explicit-graph"
+    )
+    mock_client.request.assert_called_once()
+    called_args = mock_client.request.call_args
+    assert called_args[0][0] == "DELETE"
+    assert "edges/edge-guid-123/tags" in called_args[0][1]
+
+    # Test without tenant_guid when required
+    mock_client.tenant_guid = None
+    with pytest.raises(ValueError, match="Tenant GUID is required for this resource"):
+        TestEdgeResource.delete_for_edge("edge-guid-123")
+
+    # Test without graph_guid when required
+    mock_client.tenant_guid = "test-tenant-guid"
+    mock_client.graph_guid = None
+    with pytest.raises(ValueError, match="Graph GUID is required for this resource"):
+        TestEdgeResource.delete_for_edge("edge-guid-123")
+
+    # Test with empty graph_guid
+    mock_client.graph_guid = ""
+    with pytest.raises(ValueError, match="Graph GUID is required for this resource"):
+        TestEdgeResource.delete_for_edge("edge-guid-123")
+
+    # Test with REQUIRE_TENANT = False
+    class TestEdgeResourceNoTenant(TestBaseResource, DeletableEdgeResourceMixin):
+        RESOURCE_NAME = "tags"
+        REQUIRE_TENANT = False
+        REQUIRE_GRAPH_GUID = True
+
+    mock_client.tenant_guid = None
+    mock_client.graph_guid = "test-graph-guid"
+    mock_client.request.reset_mock()
+    TestEdgeResourceNoTenant.delete_for_edge("edge-guid-123")
+    mock_client.request.assert_called_once()
+    assert mock_client.request.call_args[0][0] == "DELETE"
+
+
+def test_deletable_graph_resource_mixin(mock_client):
+    """Test DeletableGraphResourceMixin."""
+
+    class TestGraphResource(TestBaseResource, DeletableGraphResourceMixin):
+        RESOURCE_NAME = "vectors"
+        REQUIRE_TENANT = True
+        REQUIRE_GRAPH_GUID = True
+
+    # Test successful deletion
+    mock_client.request.side_effect = None
+    TestGraphResource.delete_for_graph()
+    mock_client.request.assert_called_once()
+    called_args = mock_client.request.call_args
+    assert called_args[0][0] == "DELETE"
+    assert "graphs/test-graph-guid/vectors" in called_args[0][1]
+    assert called_args[1]["headers"] == {"Content-Type": "application/json"}
+
+    # Test with explicit tenant_guid and graph_guid
+    mock_client.request.reset_mock()
+    TestGraphResource.delete_for_graph(
+        tenant_guid="explicit-tenant", graph_guid="explicit-graph"
+    )
+    mock_client.request.assert_called_once()
+    called_args = mock_client.request.call_args
+    assert called_args[0][0] == "DELETE"
+    assert "graphs/explicit-graph/vectors" in called_args[0][1]
+
+    # Test without tenant_guid when required
+    mock_client.tenant_guid = None
+    with pytest.raises(ValueError, match="Tenant GUID is required for this resource"):
+        TestGraphResource.delete_for_graph()
+
+    # Test without graph_guid when required
+    mock_client.tenant_guid = "test-tenant-guid"
+    mock_client.graph_guid = None
+    with pytest.raises(ValueError, match="Graph GUID is required for this resource"):
+        TestGraphResource.delete_for_graph()
+
+    # Test with empty graph_guid
+    mock_client.graph_guid = ""
+    with pytest.raises(ValueError, match="Graph GUID is required for this resource"):
+        TestGraphResource.delete_for_graph()
+
+    # Test with REQUIRE_TENANT = False
+    class TestGraphResourceNoTenant(TestBaseResource, DeletableGraphResourceMixin):
+        RESOURCE_NAME = "vectors"
+        REQUIRE_TENANT = False
+        REQUIRE_GRAPH_GUID = True
+
+    mock_client.tenant_guid = None
+    mock_client.graph_guid = "test-graph-guid"
+    mock_client.request.reset_mock()
+    TestGraphResourceNoTenant.delete_for_graph()
+    mock_client.request.assert_called_once()
+    assert mock_client.request.call_args[0][0] == "DELETE"
+
+
+def test_retrievable_node_resource_mixin_exception_handling(mock_client):
+    """Test RetrievableNodeResourceMixin exception handling."""
+
+    class TestNodeResource(TestBaseResource, RetrievableNodeResourceMixin):
+        RESOURCE_NAME = "tags"
+        MODEL = MockModel
+        REQUIRE_TENANT = True
+        REQUIRE_GRAPH_GUID = True
+
+    # Test when client.request raises an exception
+    mock_client.request.side_effect = Exception("Retrieval failed")
+    with pytest.raises(Exception, match="Retrieval failed"):
+        TestNodeResource.retrieve_for_node("node-guid-123")
+
+    # Test with different exception types
+    mock_client.request.side_effect = ValueError("Invalid node GUID")
+    with pytest.raises(ValueError, match="Invalid node GUID"):
+        TestNodeResource.retrieve_for_node("node-guid-123")
+
+
+def test_retrievable_edge_resource_mixin_exception_handling(mock_client):
+    """Test RetrievableEdgeResourceMixin exception handling."""
+
+    class TestEdgeResource(TestBaseResource, RetrievableEdgeResourceMixin):
+        RESOURCE_NAME = "tags"
+        MODEL = MockModel
+        REQUIRE_TENANT = True
+        REQUIRE_GRAPH_GUID = True
+
+    # Test when client.request raises an exception
+    mock_client.request.side_effect = Exception("Retrieval failed")
+    with pytest.raises(Exception, match="Retrieval failed"):
+        TestEdgeResource.retrieve_for_edge("edge-guid-123")
+
+    # Test with different exception types
+    mock_client.request.side_effect = ValueError("Invalid edge GUID")
+    with pytest.raises(ValueError, match="Invalid edge GUID"):
+        TestEdgeResource.retrieve_for_edge("edge-guid-123")
+
+
+def test_retrievable_all_endpoint_mixin_retrieve_for_graph_exception_handling(
+    mock_client,
+):
+    """Test RetrievableAllEndpointMixin.retrieve_for_graph exception handling."""
+
+    class TestGraphResource(TestBaseResource, RetrievableAllEndpointMixin):
+        RESOURCE_NAME = "vectors"
+        MODEL = MockModel
+        REQUIRE_TENANT = True
+        REQUIRE_GRAPH_GUID = True
+
+    # Test when client.request raises an exception
+    mock_client.request.side_effect = Exception("Retrieval failed")
+    with pytest.raises(Exception, match="Retrieval failed"):
+        TestGraphResource.retrieve_for_graph()
+
+    # Test with different exception types
+    mock_client.request.side_effect = ValueError("Invalid graph GUID")
+    with pytest.raises(ValueError, match="Invalid graph GUID"):
+        TestGraphResource.retrieve_for_graph()
+
+
+def test_deletable_node_resource_mixin_exception_handling(mock_client):
+    """Test DeletableNodeResourceMixin exception handling."""
+
+    class TestNodeResource(TestBaseResource, DeletableNodeResourceMixin):
+        RESOURCE_NAME = "tags"
+        REQUIRE_TENANT = True
+        REQUIRE_GRAPH_GUID = True
+
+    # Test when client.request raises an exception
+    mock_client.request.side_effect = Exception("Delete failed")
+    with pytest.raises(Exception, match="Delete failed"):
+        TestNodeResource.delete_for_node("node-guid-123")
+
+    # Test with different exception types
+    mock_client.request.side_effect = ValueError("Invalid node GUID")
+    with pytest.raises(ValueError, match="Invalid node GUID"):
+        TestNodeResource.delete_for_node("node-guid-123")
+
+
+def test_deletable_edge_resource_mixin_exception_handling(mock_client):
+    """Test DeletableEdgeResourceMixin exception handling."""
+
+    class TestEdgeResource(TestBaseResource, DeletableEdgeResourceMixin):
+        RESOURCE_NAME = "tags"
+        REQUIRE_TENANT = True
+        REQUIRE_GRAPH_GUID = True
+
+    # Test when client.request raises an exception
+    mock_client.request.side_effect = Exception("Delete failed")
+    with pytest.raises(Exception, match="Delete failed"):
+        TestEdgeResource.delete_for_edge("edge-guid-123")
+
+    # Test with different exception types
+    mock_client.request.side_effect = ValueError("Invalid edge GUID")
+    with pytest.raises(ValueError, match="Invalid edge GUID"):
+        TestEdgeResource.delete_for_edge("edge-guid-123")
+
+
+def test_deletable_graph_resource_mixin_exception_handling(mock_client):
+    """Test DeletableGraphResourceMixin exception handling."""
+
+    class TestGraphResource(TestBaseResource, DeletableGraphResourceMixin):
+        RESOURCE_NAME = "vectors"
+        REQUIRE_TENANT = True
+        REQUIRE_GRAPH_GUID = True
+
+    # Test when client.request raises an exception
+    mock_client.request.side_effect = Exception("Delete failed")
+    with pytest.raises(Exception, match="Delete failed"):
+        TestGraphResource.delete_for_graph()
+
+    # Test with different exception types
+    mock_client.request.side_effect = ValueError("Invalid graph GUID")
+    with pytest.raises(ValueError, match="Invalid graph GUID"):
+        TestGraphResource.delete_for_graph()
+
+
+def test_deletable_all_endpoint_mixin_delete_for_graph(mock_client):
+    """Test DeletableAllEndpointMixin.delete_for_graph method."""
+
+    class TestGraphResource(TestBaseResource, DeletableAllEndpointMixin):
+        RESOURCE_NAME = "vectors"
+        REQUIRE_TENANT = True
+        REQUIRE_GRAPH_GUID = True
+
+    # Test successful deletion
+    mock_client.request.side_effect = None
+    TestGraphResource.delete_for_graph()
+    mock_client.request.assert_called_once()
+    called_args = mock_client.request.call_args
+    assert called_args[0][0] == "DELETE"
+    assert "graphs/test-graph-guid/vectors" in called_args[0][1]
+    assert called_args[1]["headers"] == {"Content-Type": "application/json"}
+
+    # Test with explicit tenant_guid and graph_guid
+    mock_client.request.reset_mock()
+    TestGraphResource.delete_for_graph(
+        tenant_guid="explicit-tenant", graph_guid="explicit-graph"
+    )
+    mock_client.request.assert_called_once()
+    called_args = mock_client.request.call_args
+    assert called_args[0][0] == "DELETE"
+    assert "graphs/explicit-graph/vectors" in called_args[0][1]
+
+    # Test without tenant_guid when required
+    mock_client.tenant_guid = None
+    with pytest.raises(ValueError, match="Tenant GUID is required for this resource"):
+        TestGraphResource.delete_for_graph()
+
+    # Test without graph_guid when required
+    mock_client.tenant_guid = "test-tenant-guid"
+    mock_client.graph_guid = None
+    with pytest.raises(ValueError, match="Graph GUID is required for this resource"):
+        TestGraphResource.delete_for_graph()
+
+    # Test with empty graph_guid
+    mock_client.graph_guid = ""
+    with pytest.raises(ValueError, match="Graph GUID is required for this resource"):
+        TestGraphResource.delete_for_graph()
+
+    # Test with REQUIRE_TENANT = False
+    class TestGraphResourceNoTenant(TestBaseResource, DeletableAllEndpointMixin):
+        RESOURCE_NAME = "vectors"
+        REQUIRE_TENANT = False
+        REQUIRE_GRAPH_GUID = True
+
+    mock_client.tenant_guid = None
+    mock_client.graph_guid = "test-graph-guid"
+    mock_client.request.reset_mock()
+    TestGraphResourceNoTenant.delete_for_graph()
+    mock_client.request.assert_called_once()
+    assert mock_client.request.call_args[0][0] == "DELETE"
+
+
+def test_deletable_all_endpoint_mixin_delete_for_graph_exception_handling(mock_client):
+    """Test DeletableAllEndpointMixin.delete_for_graph exception handling."""
+
+    class TestGraphResource(TestBaseResource, DeletableAllEndpointMixin):
+        RESOURCE_NAME = "vectors"
+        REQUIRE_TENANT = True
+        REQUIRE_GRAPH_GUID = True
+
+    # Test when client.request raises an exception
+    mock_client.request.side_effect = Exception("Delete failed")
+    with pytest.raises(Exception, match="Delete failed"):
+        TestGraphResource.delete_for_graph()
+
+    # Test with different exception types
+    mock_client.request.side_effect = ValueError("Invalid graph GUID")
+    with pytest.raises(ValueError, match="Invalid graph GUID"):
+        TestGraphResource.delete_for_graph()

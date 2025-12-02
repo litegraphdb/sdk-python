@@ -118,4 +118,105 @@ def exists_tag():
     print(exists)
 
 
-exists_tag()
+# exists_tag()
+
+
+def retrieve_all_tenant_tags():
+    tags = litegraph.Tag.retrieve_all_tenant_tags(
+        tenant_guid="00000000-0000-0000-0000-000000000000"
+    )
+    print(tags)
+
+
+# retrieve_all_tenant_tags()
+
+
+def retrieve_all_graph_tags():
+    tags = litegraph.Tag.retrieve_all_graph_tags(
+        tenant_guid="00000000-0000-0000-0000-000000000000",
+        graph_guid="00000000-0000-0000-0000-000000000000",
+    )
+    print(tags)
+
+
+# retrieve_all_graph_tags()
+
+
+def retrieve_node_tags():
+    tags = litegraph.Tag.retrieve_node_tags(
+        tenant_guid="00000000-0000-0000-0000-000000000000",
+        graph_guid="00000000-0000-0000-0000-000000000000",
+        node_guid="00000000-0000-0000-0000-000000000000",
+    )
+    print(tags)
+
+
+# retrieve_node_tags()
+
+
+def retrieve_edge_tags():
+    tags = litegraph.Tag.retrieve_edge_tags(
+        tenant_guid="00000000-0000-0000-0000-000000000000",
+        graph_guid="00000000-0000-0000-0000-000000000000",
+        edge_guid="a774551f-3c55-4a13-a23f-7213fecadc86",
+    )
+    print(tags)
+
+
+# retrieve_edge_tags()
+
+
+def delete_all_tenant_tags():
+    litegraph.Tag.delete_all_tenant_tags(
+        tenant_guid="00000000-0000-0000-0000-000000000000"
+    )
+    print("All tenant tags deleted")
+
+
+# delete_all_tenant_tags()
+
+
+def delete_all_graph_tags():
+    litegraph.Tag.delete_all_graph_tags(
+        tenant_guid="00000000-0000-0000-0000-000000000000",
+        graph_guid="00000000-0000-0000-0000-000000000000",
+    )
+    print("All graph tags deleted")
+
+
+# delete_all_graph_tags()
+
+
+def delete_graph_tags():
+    litegraph.Tag.delete_graph_tags(
+        tenant_guid="00000000-0000-0000-0000-000000000000",
+        graph_guid="00000000-0000-0000-0000-000000000000",
+    )
+    print("Graph tags deleted")
+
+
+# delete_graph_tags()
+
+
+def delete_node_tags():
+    litegraph.Tag.delete_node_tags(
+        tenant_guid="00000000-0000-0000-0000-000000000000",
+        graph_guid="00000000-0000-0000-0000-000000000000",
+        node_guid="00000000-0000-0000-0000-000000000000",
+    )
+    print("Node tags deleted")
+
+
+# delete_node_tags()
+
+
+def delete_edge_tags():
+    litegraph.Tag.delete_edge_tags(
+        tenant_guid="00000000-0000-0000-0000-000000000000",
+        graph_guid="00000000-0000-0000-0000-000000000000",
+        edge_guid="a774551f-3c55-4a13-a23f-7213fecadc86",
+    )
+    print("Edge tags deleted")
+
+
+# delete_edge_tags()
