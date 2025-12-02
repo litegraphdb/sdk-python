@@ -167,7 +167,7 @@ def retrieve_subgraph():
     print(subgraph)
 
 
-retrieve_subgraph()
+# retrieve_subgraph()
 
 
 def retrieve_subgraph_statistics():
@@ -178,4 +178,20 @@ def retrieve_subgraph_statistics():
     print(statistics)
 
 
-retrieve_subgraph_statistics()
+# retrieve_subgraph_statistics()
+
+
+def retrieve_all_tenant_graphs():
+    graphs = litegraph.Graph.retrieve_all_tenant_graphs()
+    print(graphs)
+
+
+# retrieve_all_tenant_graphs()
+
+
+def delete_all_tenant_graphs():
+    litegraph.Graph.delete_all_tenant_graphs()
+    print("All tenant graphs deleted")
+
+
+# delete_all_tenant_graphs()

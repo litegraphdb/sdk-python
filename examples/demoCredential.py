@@ -98,4 +98,22 @@ def exists_credential():
     print(exists)
 
 
-exists_credential()
+# exists_credential()
+
+
+def delete_all_tenant_credential():
+    litegraph.Credential.delete_all_tenant_credentials(
+        tenant_guid="00000000-0000-0000-0000-000000000000"
+    )
+    print("All tenant credentials deleted")
+
+
+# delete_all_tenant_credential()
+
+
+def retrieve_credential_by_bearer_token():
+    credential = litegraph.Credential.get_bearer_credentials(bearer_token="foobar")
+    print(credential)
+
+
+retrieve_credential_by_bearer_token()

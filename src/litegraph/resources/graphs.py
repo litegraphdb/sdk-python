@@ -6,11 +6,13 @@ from ..configuration import get_client
 from ..mixins import (
     AllRetrievableAPIResource,
     CreateableAPIResource,
+    DeletableAllEndpointMixin,
     DeletableAPIResource,
     EnumerableAPIResource,
     EnumerableAPIResourceWithData,
     ExistsAPIResource,
     ExportGexfMixin,
+    RetrievableAllEndpointMixin,
     RetrievableAPIResource,
     RetrievableFirstMixin,
     RetrievableManyMixin,
@@ -38,6 +40,8 @@ class Graph(
     EnumerableAPIResource,
     EnumerableAPIResourceWithData,
     RetrievableStatisticsMixin,
+    RetrievableAllEndpointMixin,
+    DeletableAllEndpointMixin,
     RetrievableFirstMixin,
     RetrievableManyMixin,
 ):
@@ -224,3 +228,25 @@ class Graph(
         )
         response = client.request("GET", url)
         return GraphModel.model_validate(response)
+
+    @classmethod
+    def retrieve_all_tenant_graphs(
+        cls, tenant_guid: str | None = None
+    ) -> list[GraphModel]:
+        """
+        Retrieve all graphs for a tenant.
+
+        Args:
+            tenant_guid: The tenant GUID. If not provided, uses client.tenant_guid.
+
+        Returns:
+            List of GraphModel instances.
+        """
+        return super().retrieve_all_tenant(tenant_guid)
+
+    @classmethod
+    def delete_all_tenant_graphs(cls, tenant_guid: str | None = None) -> None:
+        """
+        Delete all graphs for a tenant.
+        """
+        return super().delete_all_tenant(tenant_guid)

@@ -23,6 +23,9 @@ class NodeModel(BaseModel):
     )
     name: Optional[str] = Field(default=None, alias="Name")
     data: Optional[dict] = Field(default=None, alias="Data")  # Object
+    edges_in: Optional[int] = Field(default=None, alias="EdgesIn")
+    edges_out: Optional[int] = Field(default=None, alias="EdgesOut")
+    edges_total: Optional[int] = Field(default=None, alias="EdgesTotal")
     created_utc: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc), alias="CreatedUtc"
     )

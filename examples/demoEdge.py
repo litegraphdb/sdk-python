@@ -146,4 +146,62 @@ def retrieve_first_edge():
     print(graph)
 
 
-retrieve_first_edge()
+# retrieve_first_edge()
+
+
+def get_all_graph_edges():
+    edges = litegraph.Edge.retrieve_all_graph_edges(
+        tenant_guid="00000000-0000-0000-0000-000000000000",
+        graph_guid="00000000-0000-0000-0000-000000000000",
+    )
+    print(edges)
+
+
+get_all_graph_edges()
+
+
+def get_all_tenant_edges():
+    edges = litegraph.Edge.retrieve_all_tenant_edges(
+        tenant_guid="00000000-0000-0000-0000-000000000000",
+    )
+    print(edges)
+
+
+get_all_tenant_edges()
+
+
+def delete_all_tenant_edges():
+    litegraph.Edge.delete_all_tenant_edges(
+        tenant_guid="00000000-0000-0000-0000-000000000000",
+    )
+    print("Edges deleted")
+
+
+# delete_all_tenant_edges()
+
+
+def delete_node_edges():
+    litegraph.Edge.delete_node_edges(
+        tenant_guid="00000000-0000-0000-0000-000000000000",
+        graph_guid="00000000-0000-0000-0000-000000000000",
+        node_guid="51c6bb09-76a5-45ce-b4a4-dcc902a383d3",
+    )
+    print("Edges deleted")
+
+
+# delete_node_edges()
+
+
+def delete_node_edges_bulk():
+    litegraph.Edge.delete_node_edges_bulk(
+        tenant_guid="00000000-0000-0000-0000-000000000000",
+        graph_guid="00000000-0000-0000-0000-000000000000",
+        node_guids=[
+            "51c6bb09-76a5-45ce-b4a4-dcc902a383d3",
+            "51c6bb09-76a5-45ce-b4a4-dcc902a383d3",
+        ],
+    )
+    print("Edges deleted")
+
+
+# delete_node_edges_bulk()
